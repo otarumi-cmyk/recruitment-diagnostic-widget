@@ -82,17 +82,6 @@ questions:
       - { key: recruit_type, operator: "==", value: "newgrad", target: newgrad }
       - { key: recruit_type, operator: "==", value: "midcareer", target: midcareer }
 
-  - id: Q0_5
-    title: シード枠での採用を検討していますか？
-    type: single
-    condition: { key: recruit_type, operator: "==", value: "newgrad" }  # 新卒を選んだ場合のみ表示
-    options:
-      - { id: seed_yes, label: "はい", value: "seed" }
-      - { id: seed_no, label: "いいえ", value: "not_seed" }
-    branches:
-      - { key: seed_type, operator: "==", value: "seed", target: seed }
-      - { key: seed_type, operator: "==", value: "not_seed", target: not_seed }
-
   - id: Q1
     title: 年間の採用人数はどれくらいですか？
     type: single
@@ -109,8 +98,8 @@ questions:
       - { key: headcount, operator: "<",  value: 50, target: not_high_volume }
 
   - id: Q2
-    title: 採用したい職種を教えてください。
-    type: single
+    title: 採用したい職種を教えてください。（複数選択・3つまで）
+    type: multi
     options:
       - { id: role_it_engineer, label: "ITエンジニア・PM", value: "engineer" }
       - { id: role_designer,    label: "デザイナー・ディレクター", value: "designer" }
@@ -131,7 +120,7 @@ questions:
       - { key: role, operator: "!=", value: "engineer", target: non_engineer }
 
   - id: Q3
-    title: 採用したい雇用形態
+    title: 雇用形態を教えてください。
     type: single
     options:
       - { id: emp_parttime, label: "アルバイト" }
@@ -153,8 +142,9 @@ questions:
     branches: []
 
   - id: Q5
-    title: 抱えている採用課題を教えてください。（複数選択可）
+    title: 抱えている採用課題を教えてください。（複数選択・3つまで）
     type: multi
+    maxSelections: 3
     options:
       - { id: issue_branding,    label: "SNS・動画・記事・パンフレット・採用ページなどブランディングしたい" }
       - { id: issue_multi_small, label: "幅広い職種を少人数ずつ採用したい" }
@@ -176,7 +166,6 @@ priorityRules:
   - { id: unknown,     target: R3 }
   - { id: multi_small, target: R4 }
   - { id: high_volume, target: R5 }
-  - { id: seed,        target: R7 }  # シード枠（優先度最低）
   - { id: other,       target: R6 }
 
 results:

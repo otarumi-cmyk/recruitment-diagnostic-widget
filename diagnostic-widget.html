@@ -18,8 +18,20 @@
     .diag-shell { max-width: 720px; margin: 32px auto; padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
     h1, h2, h3 { margin: 0 0 12px; font-weight: 700; }
     .question-card { margin: 16px 0; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius); }
-    .options { display: flex; flex-wrap: wrap; gap: 8px; }
-    .opt { border: 1px solid var(--color-border); border-radius: 999px; padding: 8px 12px; cursor: pointer; transition: all 0.15s ease; user-select: none; background: #fafafa; }
+    .options { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+    .opt {
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+      background: #fafafa;
+      box-sizing: border-box;
+      flex: 1 1 calc(50% - 8px);
+      max-width: calc(50% - 8px);
+      word-break: break-word;
+    }
     .opt.active { border-color: var(--color-primary); background: rgba(245,75,2,0.12); color: var(--color-primary); }
     .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
     button { border: none; border-radius: 999px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
@@ -55,7 +67,7 @@
     @media (max-width: 599px) {
       .diag-shell { margin: 12px; padding: 16px; }
       .options { flex-direction: column; }
-      .opt { width: 100%; text-align: center; }
+      .opt { width: 100%; max-width: 100%; flex: 1 1 100%; text-align: center; }
       .footer-nav { flex-direction: column; gap: 8px; align-items: stretch; }
     }
   </style>
@@ -91,18 +103,6 @@ const config = {
       ],
     },
     {
-      id: 'Q0_5', title: 'シード枠での採用を検討していますか？', type: 'single',
-      condition: { key: 'recruit_type', operator: '==', value: 'newgrad' },  // 新卒を選んだ場合のみ表示
-      options: [
-        { id: 'seed_yes', label: 'はい', value: 'seed' },
-        { id: 'seed_no', label: 'いいえ', value: 'not_seed' },
-      ],
-      branches: [
-        { key: 'seed_type', operator: '==', value: 'seed', target: 'seed' },
-        { key: 'seed_type', operator: '==', value: 'not_seed', target: 'not_seed' },
-      ],
-    },
-    {
       id: 'Q1', title: '年間の採用人数はどれくらいですか？', type: 'single',
       options: [
         { id: 'headcount_1_5', label: '1~5名', value: 5 },
@@ -119,7 +119,7 @@ const config = {
       ],
     },
     {
-      id: 'Q2', title: '採用したい職種を教えてください。', type: 'single',
+      id: 'Q2', title: '採用したい職種を教えてください。（複数選択・3つまで）', type: 'multi', maxSelections: 3,
       options: [
         { id: 'role_it_engineer', label: 'ITエンジニア・PM', value: 'engineer' },
         { id: 'role_designer', label: 'デザイナー・ディレクター', value: 'designer' },
@@ -142,7 +142,7 @@ const config = {
       ],
     },
     {
-      id: 'Q3', title: '採用したい雇用形態は？', type: 'single',
+      id: 'Q3', title: '雇用形態を教えてください。', type: 'single',
       options: [
         { id: 'emp_parttime', label: 'アルバイト', value: 'parttime' },
         { id: 'emp_intern', label: 'インターン', value: 'intern' },
@@ -164,7 +164,7 @@ const config = {
       branches: [],
     },
     {
-      id: 'Q5', title: '抱えている採用課題を教えてください。（複数選択可）', type: 'multi',
+      id: 'Q5', title: '抱えている採用課題を教えてください。（複数選択・3つまで）', type: 'multi', maxSelections: 3,
       options: [
         { id: 'issue_branding', label: 'SNS・動画・記事・パンフレット・採用ページなどブランディングしたい', value: 'branding' },
         { id: 'issue_multi_small', label: '幅広い職種を少人数ずつ採用したい', value: 'multi_small' },
@@ -189,7 +189,6 @@ const config = {
     { id: 'unknown', target: 'R3' },
     { id: 'multi_small', target: 'R4' },
     { id: 'high_volume', target: 'R5' },
-    { id: 'seed', target: 'R7' },  // シード枠（優先度最低）
     { id: 'other', target: 'R6' },
   ],
   results: {
@@ -202,13 +201,24 @@ const config = {
       comparisonTable: {
         enabled: true,
         columns: [
-          { id: 'col_primary', label: '即戦力RPO', image: { src: '/path/to/primary.png', alt: '即戦力RPO' } },
-          { id: 'col_other', label: '他サービス（例: エンジニア特化ATS）', image: { src: '/path/to/other.png', alt: '他サービス' } },
+          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
+          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
+          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
         ],
         rows: [
-          { id: 'row_pricing', label: '料金モデル', cells: { col_primary: '固定＋成果 / 月額など', col_other: '従量/成果/掲載課金 など' } },
-          { id: 'row_strength', label: '得意領域', cells: { col_primary: 'エンジニア採用に強い', col_other: '総合型' } },
+          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '成果報酬', col_c: '固定＋成果' } },
+          { id: 'row_strength', label: '得意領域', cells: { col_a: '総合型', col_b: 'エンジニア特化', col_c: 'エンジニア特化' } },
+          { id: 'row_speed', label: 'スピード', cells: { col_a: '標準', col_b: '速い', col_c: '速い' } },
+          { id: 'row_ops', label: '運用体制', cells: { col_a: '部分代行', col_b: 'フル代行', col_c: '伴走＋代行' } },
         ],
+      },
+      summaryBlock: {
+        title: '【全部入りでこのプラン】',
+        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
+        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
+        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
+        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
+        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
       }
     },
     R2: {
@@ -220,13 +230,23 @@ const config = {
       comparisonTable: {
         enabled: true,
         columns: [
-          { id: 'col_primary', label: '即戦力RPO', image: { src: '/path/to/primary.png', alt: '即戦力RPO' } },
-          { id: 'col_other', label: '他サービス（例: クリエイティブ制作会社）', image: { src: '/path/to/other.png', alt: '他サービス' } },
+          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
+          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
+          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
         ],
         rows: [
-          { id: 'row_brand', label: 'クリエイティブ', cells: { col_primary: 'SNS/動画/記事まで一気通貫', col_other: '制作のみ' } },
-          { id: 'row_tonemanner', label: 'トンマナ設計', cells: { col_primary: '採用基点で設計', col_other: '別途発注' } },
+          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '制作費別途', col_b: '月額固定', col_c: '固定＋成果' } },
+          { id: 'row_brand', label: 'クリエイティブ', cells: { col_a: '制作のみ', col_b: 'SNS/動画', col_c: 'SNS/動画/記事まで一気通貫' } },
+          { id: 'row_tonemanner', label: 'トンマナ設計', cells: { col_a: '別途発注', col_b: '簡易対応', col_c: '採用基点で設計' } },
         ],
+      },
+      summaryBlock: {
+        title: '【全部入りでこのプラン】',
+        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
+        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
+        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
+        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
+        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
       }
     },
     R3: {
@@ -238,14 +258,24 @@ const config = {
       comparisonTable: {
         enabled: true,
         columns: [
-          { id: 'col_primary', label: '即戦力RPO', image: { src: '/path/to/primary.png', alt: '即戦力RPO' } },
-          { id: 'col_other', label: '他サービス（例: 広告運用のみ/ライト代行）', image: { src: '/path/to/other.png', alt: '他サービス' } },
+          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
+          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
+          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
         ],
         rows: [
-          { id: 'row_strategy', label: '戦略設計', cells: { col_primary: '0→1設計・要件定義から伴走', col_other: '実務代行のみが多い' } },
-          { id: 'row_kpi', label: 'KPI設計/モニタリング', cells: { col_primary: '設計〜改善まで実施', col_other: 'レポート簡易' } },
-          { id: 'row_ops', label: '運用代行', cells: { col_primary: 'フル代行可', col_other: '部分のみ' } },
+          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '固定', col_c: '固定＋成果' } },
+          { id: 'row_strategy', label: '戦略設計', cells: { col_a: '実務代行のみ', col_b: '簡易設計', col_c: '0→1設計・要件定義から伴走' } },
+          { id: 'row_kpi', label: 'KPI設計/モニタリング', cells: { col_a: 'レポート簡易', col_b: '標準レポート', col_c: '設計〜改善まで実施' } },
+          { id: 'row_ops', label: '運用代行', cells: { col_a: '部分のみ', col_b: 'フル代行', col_c: 'フル代行可' } },
         ],
+      },
+      summaryBlock: {
+        title: '【全部入りでこのプラン】',
+        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
+        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
+        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
+        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
+        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
       }
     },
     R4: {
@@ -257,14 +287,24 @@ const config = {
       comparisonTable: {
         enabled: true,
         columns: [
-          { id: 'col_primary', label: '即戦力RPO', image: { src: '/path/to/primary.png', alt: '即戦力RPO' } },
-          { id: 'col_other', label: '他サービス（例: 一般型RPO/派遣）', image: { src: '/path/to/other.png', alt: '他サービス' } },
+          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
+          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
+          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
         ],
         rows: [
-          { id: 'row_flex', label: '対応範囲', cells: { col_primary: '少人数×多職種に柔軟対応', col_other: '単職種前提が多い' } },
-          { id: 'row_channels', label: 'チャネル運用', cells: { col_primary: '複数媒体/ダイレクト両対応', col_other: '媒体限定になりがち' } },
-          { id: 'row_partial', label: '部分委託', cells: { col_primary: '部分委託OK', col_other: 'フル委託前提が多い' } },
+          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '固定', col_c: '固定＋成果' } },
+          { id: 'row_flex', label: '対応範囲', cells: { col_a: '単職種前提', col_b: '複数職種可', col_c: '少人数×多職種に柔軟対応' } },
+          { id: 'row_channels', label: 'チャネル運用', cells: { col_a: '媒体限定', col_b: '複数媒体', col_c: '複数媒体/ダイレクト両対応' } },
+          { id: 'row_partial', label: '部分委託', cells: { col_a: 'フル委託前提', col_b: '部分可', col_c: '部分委託OK' } },
         ],
+      },
+      summaryBlock: {
+        title: '【全部入りでこのプラン】',
+        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
+        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
+        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
+        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
+        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
       }
     },
     R5: {
@@ -276,14 +316,24 @@ const config = {
       comparisonTable: {
         enabled: true,
         columns: [
-          { id: 'col_primary', label: '即戦力RPO', image: { src: '/path/to/primary.png', alt: '即戦力RPO' } },
-          { id: 'col_other', label: '他サービス（例: 派遣/紹介大手）', image: { src: '/path/to/other.png', alt: '他サービス' } },
+          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
+          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
+          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
         ],
         rows: [
-          { id: 'row_pool', label: '母集団形成', cells: { col_primary: '説明会/イベント＋広告で大量集客', col_other: '媒体/紹介依存' } },
-          { id: 'row_ops', label: '運用設計', cells: { col_primary: '歩留まり改善を仕組み化', col_other: 'スポット対応が多い' } },
-          { id: 'row_scale', label: 'スケール', cells: { col_primary: '年間50名〜想定で最適化', col_other: '上限にぶつかりやすい' } },
+          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '成果報酬', col_c: '固定＋成果' } },
+          { id: 'row_pool', label: '母集団形成', cells: { col_a: '媒体依存', col_b: '紹介中心', col_c: '説明会/イベント＋広告で大量集客' } },
+          { id: 'row_ops', label: '運用設計', cells: { col_a: 'スポット対応', col_b: '標準運用', col_c: '歩留まり改善を仕組み化' } },
+          { id: 'row_scale', label: 'スケール', cells: { col_a: '上限あり', col_b: '中規模まで', col_c: '年間50名〜想定で最適化' } },
         ],
+      },
+      summaryBlock: {
+        title: '【全部入りでこのプラン】',
+        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
+        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
+        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
+        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
+        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
       }
     },
     R6: {
@@ -295,32 +345,23 @@ const config = {
       comparisonTable: {
         enabled: true,
         columns: [
-          { id: 'col_primary', label: '即戦力RPO', image: { src: '/path/to/primary.png', alt: '即戦力RPO' } },
-          { id: 'col_other', label: '他サービス（例: 汎用RPO）', image: { src: '/path/to/other.png', alt: '他サービス' } },
+          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
+          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
+          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
         ],
         rows: [
-          { id: 'row_scope', label: '対応範囲', cells: { col_primary: '媒体運用〜選考調整まで一括', col_other: '媒体中心' } },
-          { id: 'row_cost', label: 'コスト', cells: { col_primary: '固定＋軽成果など柔軟', col_other: '固定/成果のみ' } },
-          { id: 'row_support', label: '伴走度', cells: { col_primary: '体制設計から伴走', col_other: 'オペ代行中心' } },
+          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '固定', col_c: '固定＋軽成果など柔軟' } },
+          { id: 'row_scope', label: '対応範囲', cells: { col_a: '媒体中心', col_b: '媒体＋選考', col_c: '媒体運用〜選考調整まで一括' } },
+          { id: 'row_support', label: '伴走度', cells: { col_a: 'オペ代行中心', col_b: '部分伴走', col_c: '体制設計から伴走' } },
         ],
-      }
-    },
-    R7: {
-      title: 'シード枠ルート',
-      description: '新卒シード枠採用に特化したRPO',
-      ctaLabel: 'まず採用の困りごとを相談する',
-      ctaUrl: '#',
-      note: '自由追記枠',
-      comparisonTable: {
-        enabled: true,
-        columns: [
-          { id: 'col_primary', label: '即戦力RPO', image: { src: '/path/to/primary.png', alt: '即戦力RPO' } },
-          { id: 'col_other', label: '他サービス（例: 新卒採用代行）', image: { src: '/path/to/other.png', alt: '他サービス' } },
-        ],
-        rows: [
-          { id: 'row_seed', label: 'シード枠対応', cells: { col_primary: 'シード枠に特化した母集団形成', col_other: '一般新卒と同様の対応' } },
-          { id: 'row_timing', label: '採用タイミング', cells: { col_primary: '早期採用に最適化', col_other: '通常スケジュール' } },
-        ],
+      },
+      summaryBlock: {
+        title: '【全部入りでこのプラン】',
+        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
+        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
+        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
+        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
+        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
       }
     },
   },
@@ -393,8 +434,16 @@ function renderQuestion() {
     el.addEventListener('click', () => {
       if (q.type === 'multi') {
         const arr = new Set(selected);
+        const wasSelected = arr.has(el.dataset.id);
+        const max = q.maxSelections || Infinity;
+        if (!wasSelected && arr.size >= max) {
+          state.errors[q.id] = `最大${max}つまで選択できます`;
+          renderQuestion();
+          return;
+        }
         arr.has(el.dataset.id) ? arr.delete(el.dataset.id) : arr.add(el.dataset.id);
         state.answers[q.id] = Array.from(arr);
+        state.errors[q.id] = '';
       } else {
         state.answers[q.id] = el.dataset.id;
       }
@@ -421,11 +470,6 @@ function evalBranches() {
     if (!val || !q.branches || q.branches.length === 0) continue;
     for (const b of q.branches) {
       if (b.key === 'recruit_type') {
-        const opt = q.options.find(o => o.id === val);
-        const v = opt?.value;
-        if (b.operator === '==' && v === b.value) hits.add(b.target);
-      }
-      if (b.key === 'seed_type') {
         const opt = q.options.find(o => o.id === val);
         const v = opt?.value;
         if (b.operator === '==' && v === b.value) hits.add(b.target);
@@ -466,6 +510,7 @@ function renderResult() {
   const res = config.results[rid];
   if (!res) { root.innerHTML = '<div class="result-card">結果が取得できませんでした。</div>'; return; }
   const table = renderTable(res.comparisonTable);
+  const summary = renderSummary(res.summaryBlock, res);
   root.innerHTML = `
     <div class="result-card">
       <h3>${res.title}</h3>
@@ -473,8 +518,44 @@ function renderResult() {
       ${res.note ? `<p class="muted">${res.note}</p>` : ''}
       <div style="margin: 12px 0; font-weight: 700;">あなたにおすすめの採用代行はこちら</div>
       ${table}
-      <div class="cta-area">
-        ${res.ctaUrl ? `<a class="btn-primary" style="text-decoration:none;" href="${res.ctaUrl}" target="_blank" rel="noopener">${res.ctaLabel || '相談する'}</a>` : ''}
+      ${summary}
+    </div>
+  `;
+}
+
+function renderSummary(summary, res) {
+  if (!summary) return '';
+  return `
+    <div style="margin-top: 24px; padding: 16px; background: rgba(245,75,2,0.05); border-radius: 10px; border: 1px solid rgba(245,75,2,0.2);">
+      <h4 style="margin: 0 0 12px; color: var(--color-primary);">${summary.title || '【全部入りでこのプラン】'}</h4>
+      ${summary.image?.src ? `<div style="margin: 8px 0;"><img src="${summary.image.src}" alt="${summary.image.alt || ''}" style="max-width: 100%; height: auto; border-radius: 8px;"></div>` : ''}
+      ${summary.pricing ? `<p style="margin: 8px 0; font-weight: 700; font-size: 16px;">${summary.pricing}</p>` : ''}
+      ${summary.includes && summary.includes.length > 0 ? `
+        <div style="margin: 12px 0;">
+          <strong>含まれるもの:</strong>
+          <ul style="margin: 4px 0; padding-left: 20px;">
+            ${summary.includes.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+      ${summary.strengths && summary.strengths.length > 0 ? `
+        <div style="margin: 12px 0;">
+          <strong>強み:</strong>
+          <ul style="margin: 4px 0; padding-left: 20px;">
+            ${summary.strengths.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+      ${summary.options && summary.options.length > 0 ? `
+        <div style="margin: 12px 0;">
+          <strong>オプション:</strong>
+          <ul style="margin: 4px 0; padding-left: 20px;">
+            ${summary.options.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+      <div class="cta-area" style="margin-top: 16px;">
+        <a class="btn-primary" style="text-decoration:none;" href="${res.ctaUrl || '#'}" target="_blank" rel="noopener">${res.ctaLabel || 'まず採用の困りごとを相談する'}</a>
       </div>
     </div>
   `;
