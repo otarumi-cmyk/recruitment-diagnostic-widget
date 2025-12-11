@@ -72,35 +72,63 @@
 ## 8. 初期データモデル例（YAML）
 ```yaml
 questions:
-  - id: Q1
-    title: 年間採用人数
+  - id: Q0
+    title: 新卒採用と中途採用のどちらを対象にしますか？
     type: single
     options:
-      - { id: headcount_5,   label: "5名程度" }
-      - { id: headcount_10,  label: "10名程度" }
-      - { id: headcount_20,  label: "20名程度" }
-      - { id: headcount_30,  label: "30名程度" }
-      - { id: headcount_50,  label: "50名程度" }
-      - { id: headcount_100, label: "100名以上" }
+      - { id: recruit_newgrad, label: "新卒採用", value: "newgrad" }
+      - { id: recruit_midcareer, label: "中途採用", value: "midcareer" }
+    branches:
+      - { key: recruit_type, operator: "==", value: "newgrad", target: newgrad }
+      - { key: recruit_type, operator: "==", value: "midcareer", target: midcareer }
+
+  - id: Q0_5
+    title: シード枠での採用を検討していますか？
+    type: single
+    condition: { key: recruit_type, operator: "==", value: "newgrad" }  # 新卒を選んだ場合のみ表示
+    options:
+      - { id: seed_yes, label: "はい", value: "seed" }
+      - { id: seed_no, label: "いいえ", value: "not_seed" }
+    branches:
+      - { key: seed_type, operator: "==", value: "seed", target: seed }
+      - { key: seed_type, operator: "==", value: "not_seed", target: not_seed }
+
+  - id: Q1
+    title: 年間の採用人数はどれくらいですか？
+    type: single
+    options:
+      - { id: headcount_1_5,   label: "1~5名", value: 5 }
+      - { id: headcount_6_10,  label: "6~10名", value: 10 }
+      - { id: headcount_11_20, label: "11~20名", value: 20 }
+      - { id: headcount_21_30, label: "21~30名", value: 30 }
+      - { id: headcount_31_50, label: "31~50名", value: 50 }
+      - { id: headcount_51_100, label: "51~100名", value: 100 }
+      - { id: headcount_101,   label: "101名以上", value: 101 }
     branches:
       - { key: headcount, operator: ">=", value: 50, target: high_volume }
       - { key: headcount, operator: "<",  value: 50, target: not_high_volume }
 
   - id: Q2
-    title: 採用したい職種
+    title: 採用したい職種を教えてください。
     type: single
     options:
-      - { id: role_engineer,        label: "エンジニア" }
-      - { id: role_sales,           label: "営業" }
-      - { id: role_cs,              label: "CS" }
-      - { id: role_marketing,       label: "マーケ" }
-      - { id: role_backoffice,      label: "バックオフィス" }
-      - { id: role_designer,        label: "デザイナー" }
-      - { id: role_pm,              label: "PM" }
-      - { id: role_engineer_detail, label: "エンジニア（フロント・バック・インフラ etc…）" }
+      - { id: role_it_engineer, label: "ITエンジニア・PM", value: "engineer" }
+      - { id: role_designer,    label: "デザイナー・ディレクター", value: "designer" }
+      - { id: role_marketing,   label: "マーケティング・企画・PdM", value: "marketing" }
+      - { id: role_sales,       label: "営業", value: "sales" }
+      - { id: role_cs,          label: "カスタマーサクセス", value: "cs" }
+      - { id: role_backoffice,  label: "経理・管理・バックオフィス", value: "backoffice" }
+      - { id: role_executive,   label: "経営・CxO", value: "executive" }
+      - { id: role_office,       label: "事務職", value: "office" }
+      - { id: role_retail,       label: "販売・サービス", value: "retail" }
+      - { id: role_consultant,  label: "士業・コンサルタント", value: "consultant" }
+      - { id: role_tech_eng,     label: "機械・電気・電子・半導体", value: "tech_eng" }
+      - { id: role_construction, label: "建築設計・土木・プラント", value: "construction" }
+      - { id: role_technical,   label: "技術工・警備・設備", value: "technical" }
+      - { id: role_other,       label: "その他", value: "other" }
     branches:
-      - { key: role, operator: "==", value: engineer, target: engineer }
-      - { key: role, operator: "!=", value: engineer, target: non_engineer }
+      - { key: role, operator: "==", value: "engineer", target: engineer }
+      - { key: role, operator: "!=", value: "engineer", target: non_engineer }
 
   - id: Q3
     title: 採用したい雇用形態
@@ -113,24 +141,27 @@ questions:
     branches: []
 
   - id: Q4
-    title: 企業規模
+    title: 従業員数はどれくらいですか？
     type: single
     options:
-      - { id: size_smb,     label: "中小企業" }
-      - { id: size_venture, label: "ベンチャー" }
-      - { id: size_enterprise, label: "大企業" }
+      - { id: empcount_1_29,    label: "1~29名", value: 29 }
+      - { id: empcount_30_99,   label: "30~99名", value: 99 }
+      - { id: empcount_100_299, label: "100~299名", value: 299 }
+      - { id: empcount_300_999, label: "300~999名", value: 999 }
+      - { id: empcount_1000_4999, label: "1000~4999名", value: 4999 }
+      - { id: empcount_5000_plus, label: "5000名以上", value: 5000 }
     branches: []
 
   - id: Q5
-    title: 採用課題（複数選択可）
+    title: 抱えている採用課題を教えてください。（複数選択可）
     type: multi
     options:
-      - { id: issue_branding,    label: "ブランディングしたい" }
+      - { id: issue_branding,    label: "SNS・動画・記事・パンフレット・採用ページなどブランディングしたい" }
       - { id: issue_multi_small, label: "幅広い職種を少人数ずつ採用したい" }
-      - { id: issue_unknown,     label: "何もかもわからない" }
+      - { id: issue_unknown,     label: "採用戦略や進め方がわからない" }
       - { id: issue_resource,    label: "人事リソース不足" }
       - { id: issue_pool,        label: "母集団形成したい" }
-      - { id: issue_pdca,        label: "PDCA回せない" }
+      - { id: issue_pdca,        label: "採用のPDCAを回せない" }
       - { id: issue_requirements,label: "要件定義がわからない" }
       - { id: issue_cost,        label: "採用コストを抑えたい" }
       - { id: issue_knowledge,   label: "採用ナレッジがない" }
@@ -145,6 +176,7 @@ priorityRules:
   - { id: unknown,     target: R3 }
   - { id: multi_small, target: R4 }
   - { id: high_volume, target: R5 }
+  - { id: seed,        target: R7 }  # シード枠（優先度最低）
   - { id: other,       target: R6 }
 
 results:
@@ -216,31 +248,51 @@ flowchart: |
 +--------------------------------------------------------------+
 | LOGO (img)                                                   |
 +--------------------------------------------------------------+
-| Q1: 年間採用人数はどれくらいですか？                         |
-| [○ 5名程度] [○ 10名程度] [○ 20名程度] [○ 30名程度]          |
-| [○ 50名程度] [○ 100名以上]                                  |
-| Progress: [███-----] 1/5                                     |
-|           ← 戻る                    次へ →                   |
+| Q0: 新卒採用と中途採用のどちらを対象にしますか？             |
+| [○ 新卒採用] [○ 中途採用]                                    |
+| Progress: [█------] 1/6                                      |
+|           ← 戻る                    次へ →                    |
 +--------------------------------------------------------------+
-| Q2: 採用したい職種を教えてください。                        |
-| [○ エンジニア] [○ 営業] [○ CS] [○ マーケ] [○ バックオフィス] |
-| [○ デザイナー] [○ PM] [○ エンジニア（詳細）]                |
-| Progress: [████----] 2/5                                     |
-|           ← 戻る                    次へ →                   |
+| Q0.5: シード枠での採用を検討していますか？（新卒選択時のみ） |
+| [○ はい] [○ いいえ]                                          |
+| Progress: [██-----] 2/6                                      |
+|           ← 戻る                    次へ →                    |
 +--------------------------------------------------------------+
-| ...（Q3/Q4/Q5 同様のカード表示）                            |
+| Q1: 年間の採用人数はどれくらいですか？                       |
+| [○ 1~5名] [○ 6~10名] [○ 11~20名] [○ 21~30名]                 |
+| [○ 31~50名] [○ 51~100名] [○ 101名以上]                      |
+| Progress: [███----] 3/6                                      |
+|           ← 戻る                    次へ →                    |
++--------------------------------------------------------------+
+| Q2: 採用したい職種を教えてください。                         |
+| [○ ITエンジニア・PM] [○ デザイナー・ディレクター]            |
+| [○ マーケティング・企画・PdM] [○ 営業] [○ CS]               |
+| [○ 経理・管理・バックオフィス] [○ 経営・CxO]                 |
+| [○ 事務職] [○ 販売・サービス] [○ 士業・コンサルタント]      |
+| [○ 機械・電気・電子・半導体] [○ 建築設計・土木・プラント]    |
+| [○ 技術工・警備・設備] [○ その他]                           |
+| Progress: [████---] 4/6                                      |
+|           ← 戻る                    次へ →                    |
++--------------------------------------------------------------+
+| ...（Q3/Q4/Q5 同様のカード表示）                             |
 +--------------------------------------------------------------+
 | あなたにおすすめの採用代行はこちら                           |
-| 比較表（ルートごとに差し替え）                              |
-|            | 即戦力RPO (img) | 他サービス (img)             |
-| 料金モデル  | 固定＋成果       | 従量/成果/掲載課金など       |
-| 得意領域    | エンジニア特化   | 総合型                      |
-| スピード    | 〇〇〇           | 〇〇                        |
-| 運用体制    | 伴走＋代行       | 〇〇                        |
-| ...        | ...             | ...                         |
+| 比較表（3サービス比較）                                      |
+|            | サービスA (img) | サービスB (img) | サービスC (img) |
+| 料金モデル  | ...            | ...            | ...              |
+| 得意領域    | ...            | ...            | ...              |
+| スピード    | ...            | ...            | ...              |
+| 運用体制    | ...            | ...            | ...              |
+| ...        | ...            | ...            | ...              |
 +--------------------------------------------------------------+
-| CTAボタン                                                    |
-| - 主CTA / （必要ならサブCTAも可）                            |
+| 即戦力RPO（まとめ提案ブロック）                              |
+| 【全部入りでこのプラン】                                     |
+| - 料金例: 月額XX万円〜（成果連動を含め柔軟に設定可）          |
+| - 含まれるもの: 母集団形成 / クリエイティブ / 選考調整 /      |
+|   PDCA / レポート / 伴走ミーティング                          |
+| - 強み: 早期立ち上げ、複数職種同時対応、現場巻き込み設計       |
+| - オプション: 説明会・イベント、リファラル設計、ATS連携       |
+| CTA: 主CTA（例: 今すぐ相談する）、必要ならサブCTAを併設        |
 +--------------------------------------------------------------+
 ```
 
