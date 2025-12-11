@@ -3,576 +3,305 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>採用診断ブログパーツ</title>
+  <title>人気300企業 転職可能性診断</title>
   <style>
     :root {
-      --color-primary: #f54b02;
-      --color-secondary: #ff6b03;
-      --color-text: #111;
-      --color-bg: #fff;
-      --color-border: #e5e5e5;
-      --radius: 10px;
-      --font: 'Hiragino Sans', 'Noto Sans JP', 'Segoe UI', sans-serif;
+      --bg: #0f172a;
+      --panel: #111827;
+      --surface: #1f2937;
+      --border: #1f2a44;
+      --primary: #10b981;
+      --secondary: #22d3ee;
+      --accent: #f59e0b;
+      --danger: #f97316;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --radius: 16px;
+      --font: 'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+      --shadow: 0 18px 48px rgba(0,0,0,0.22);
+      --shadow-soft: 0 8px 22px rgba(0,0,0,0.16);
+      --glow: 0 0 36px rgba(16,185,129,0.25);
     }
-    body { margin: 0; font-family: var(--font); background: var(--color-bg); color: var(--color-text); }
-    .diag-shell { max-width: 720px; margin: 32px auto; padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-    h1, h2, h3 { margin: 0 0 12px; font-weight: 700; }
-    .question-card { margin: 16px 0; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius); }
-    .options { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
-    .opt {
-      border: 1px solid var(--color-border);
-      border-radius: 999px;
-      padding: 8px 12px;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(circle at 20% 20%, rgba(34,211,238,0.12), transparent 25%),
+                  radial-gradient(circle at 80% 0%, rgba(16,185,129,0.12), transparent 20%),
+                  var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .shell {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .hero {
+      padding: 24px 28px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(34,211,238,0.08));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(6px);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: 0.01em; }
+    .hero p { margin: 4px 0; color: var(--muted); }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.15s ease;
-      user-select: none;
-      background: #fafafa;
-      box-sizing: border-box;
-      flex: 1 1 calc(50% - 8px);
-      max-width: calc(50% - 8px);
-      word-break: break-word;
     }
-    .opt.active { border-color: var(--color-primary); background: rgba(245,75,2,0.12); color: var(--color-primary); }
-    .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
-    button { border: none; border-radius: 999px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
     .btn-primary {
-      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-      color: #fff;
-      box-shadow: 0 6px 18px rgba(245,75,2,0.35);
-      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #0b1120;
+      box-shadow: var(--glow);
     }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(245,75,2,0.42); filter: brightness(1.02); }
-    .btn-primary:active { transform: translateY(0); box-shadow: 0 4px 12px rgba(245,75,2,0.28); }
-    .btn-secondary { background: #fff; color: var(--color-primary); border: 1px solid var(--color-primary); }
-    .progress-wrap { display: flex; align-items: center; gap: 8px; margin: 8px 0 16px; }
-    .progress { flex: 1; height: 8px; background: #f3f3f3; border-radius: 999px; overflow: hidden; }
-    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); width: 0%; transition: width 0.2s ease; }
-    .progress-text { font-size: 13px; color: #444; min-width: 92px; text-align: right; }
-    .error { color: #c00; font-size: 13px; margin-top: 6px; }
-    .result-card { padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius); margin: 12px 0; }
-    .table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    .table th, .table td { border: 1px solid var(--color-border); padding: 8px; text-align: left; }
-    .table th { background: rgba(245,75,2,0.08); }
-    .cta-area { display: flex; gap: 8px; flex-direction: column; margin: 12px 0; }
-    .cta-area .btn-primary {
+    .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      padding: 20px;
+    }
+    .flex {
+      display: grid;
+      grid-template-columns: 2fr 1.1fr;
+      gap: 16px;
+    }
+    .question-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.02);
+      margin-bottom: 12px;
+    }
+    .question-title { margin: 0 0 8px; font-weight: 700; }
+    .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+    .opt {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text);
+    }
+    .opt:hover { border-color: var(--primary); transform: translateY(-1px); }
+    .opt.active { border-color: var(--primary); background: rgba(16,185,129,0.12); box-shadow: var(--glow); color: #eafff6; }
+    .nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+    .progress-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .progress { flex: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 999px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.2s ease; }
+    .progress-text { font-size: 13px; color: var(--muted); min-width: 110px; text-align: right; }
+    .error { color: #fca5a5; font-size: 13px; margin-top: 6px; }
+    .meter {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .meter-bar {
+      position: relative;
       width: 100%;
-      display: block;
-      text-align: center;
-      padding: 14px 16px;
-      box-sizing: border-box;
-      max-width: 100%;
+      height: 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 999px;
+      overflow: hidden;
     }
-    .muted { color: #555; font-size: 14px; }
-    .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--color-primary); margin-bottom: 12px; }
-    @media (max-width: 599px) {
-      .diag-shell { margin: 12px; padding: 16px; }
-      .options { flex-direction: column; }
-      .opt { width: 100%; max-width: 100%; flex: 1 1 100%; text-align: center; }
-      .footer-nav { flex-direction: column; gap: 8px; align-items: stretch; }
+    .meter-fill { position: absolute; inset: 0; width: 20%; border-radius: 999px; }
+    .tag { padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); }
+    .result-list { display: flex; flex-direction: column; gap: 10px; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 10px; margin-top: 8px; }
+    .mini-card { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); }
+    .pill { display: inline-flex; gap: 6px; align-items: center; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); font-size: 12px; color: var(--text); }
+    @media (max-width: 960px) { .flex { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      .hero { padding: 18px; }
+      .options { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="diag-shell" id="diag-root">
-    <div class="logo">即戦力RPO 診断</div>
-    <div class="progress-wrap">
-      <div class="progress"><div class="progress-bar" id="diag-progress"></div></div>
-      <div class="progress-text" id="diag-progress-text"></div>
+  <div class="shell">
+    <div class="hero">
+      <h1>人気300企業 転職可能性診断</h1>
+      <p>20問で市場価値をスコア化し、300社の合格可能性を1〜6%で可視化。</p>
+      <div class="cta-row">
+        <button class="btn btn-primary" id="start">診断を始める</button>
+        <button class="btn btn-secondary" id="skip">結果サンプルを見る</button>
+        <span class="muted">レスポンシブ対応・全設問カード型UI</span>
+      </div>
     </div>
-    <div id="diag-body"></div>
+
+    <div class="panel flex">
+      <div>
+        <div class="progress-wrap">
+          <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+          <div class="progress-text" id="progress-text">0/20 (0%)</div>
+        </div>
+        <div id="form-area"></div>
+      </div>
+      <div>
+        <h3 style="margin:0 0 6px;">合格可能性メーター（例）</h3>
+        <p class="muted" style="margin:0 0 10px;">6%以上でGREEN、それ未満は黄/橙/赤にグラデーション。</p>
+        <div class="result-list" id="result-list"></div>
+        <div class="cards">
+          <div class="mini-card">
+            <div class="pill">レンジ: 1〜6%</div>
+            <div class="muted" style="margin-top:6px;">95%がこの範囲に収まる設計</div>
+          </div>
+          <div class="mini-card">
+            <div class="pill">g0=0 / s=4</div>
+            <div class="muted" style="margin-top:6px;">シグモイドで平滑化し、上限/下限をクリップ</div>
+          </div>
+          <div class="mini-card">
+            <div class="pill">k_diff</div>
+            <div class="muted" style="margin-top:6px;">難易度係数で実力主義の倍率を反映</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-<script type="module">
-const config = {
-  theme: {
-    primary: '#f54b02',
-    secondary: '#ff6b03',
-    text: '#111',
-    bg: '#fff',
-  },
-  questions: [
-    {
-      id: 'Q0', title: '新卒採用と中途採用のどちらを対象にしますか？', type: 'single',
-      options: [
-        { id: 'recruit_newgrad', label: '新卒採用', value: 'newgrad' },
-        { id: 'recruit_midcareer', label: '中途採用', value: 'midcareer' },
-      ],
-      branches: [
-        { key: 'recruit_type', operator: '==', value: 'newgrad', target: 'newgrad' },
-        { key: 'recruit_type', operator: '==', value: 'midcareer', target: 'midcareer' },
-      ],
-    },
-    {
-      id: 'Q1', title: '年間の採用人数はどれくらいですか？', type: 'single',
-      options: [
-        { id: 'headcount_1_5', label: '1~5名', value: 5 },
-        { id: 'headcount_6_10', label: '6~10名', value: 10 },
-        { id: 'headcount_11_20', label: '11~20名', value: 20 },
-        { id: 'headcount_21_30', label: '21~30名', value: 30 },
-        { id: 'headcount_31_50', label: '31~50名', value: 50 },
-        { id: 'headcount_51_100', label: '51~100名', value: 100 },
-        { id: 'headcount_101', label: '101名以上', value: 101 },
-      ],
-      branches: [
-        { key: 'headcount', operator: '>=', value: 50, target: 'high_volume' },
-        { key: 'headcount', operator: '<', value: 50, target: 'not_high_volume' },
-      ],
-    },
-    {
-      id: 'Q2', title: '採用したい職種を教えてください。（複数選択・3つまで）', type: 'multi', maxSelections: 3,
-      options: [
-        { id: 'role_it_engineer', label: 'ITエンジニア・PM', value: 'engineer' },
-        { id: 'role_designer', label: 'デザイナー・ディレクター', value: 'designer' },
-        { id: 'role_marketing', label: 'マーケティング・企画・PdM', value: 'marketing' },
-        { id: 'role_sales', label: '営業', value: 'sales' },
-        { id: 'role_cs', label: 'カスタマーサクセス', value: 'cs' },
-        { id: 'role_backoffice', label: '経理・管理・バックオフィス', value: 'backoffice' },
-        { id: 'role_executive', label: '経営・CxO', value: 'executive' },
-        { id: 'role_office', label: '事務職', value: 'office' },
-        { id: 'role_retail', label: '販売・サービス', value: 'retail' },
-        { id: 'role_consultant', label: '士業・コンサルタント', value: 'consultant' },
-        { id: 'role_tech_eng', label: '機械・電気・電子・半導体', value: 'tech_eng' },
-        { id: 'role_construction', label: '建築設計・土木・プラント', value: 'construction' },
-        { id: 'role_technical', label: '技術工・警備・設備', value: 'technical' },
-        { id: 'role_other', label: 'その他', value: 'other' },
-      ],
-      branches: [
-        { key: 'role', operator: '==', value: 'engineer', target: 'engineer' },
-        { key: 'role', operator: '!=', value: 'engineer', target: 'non_engineer' },
-      ],
-    },
-    {
-      id: 'Q3', title: '雇用形態を教えてください。', type: 'single',
-      options: [
-        { id: 'emp_parttime', label: 'アルバイト', value: 'parttime' },
-        { id: 'emp_intern', label: 'インターン', value: 'intern' },
-        { id: 'emp_contract', label: '業務委託', value: 'contract' },
-        { id: 'emp_fulltime', label: '正社員', value: 'fulltime' },
-      ],
-      branches: [],
-    },
-    {
-      id: 'Q4', title: '企業規模を教えてください。', type: 'single',
-      options: [
-        { id: 'empcount_1_29', label: '1~29名', value: 29 },
-        { id: 'empcount_30_99', label: '30~99名', value: 99 },
-        { id: 'empcount_100_299', label: '100~299名', value: 299 },
-        { id: 'empcount_300_999', label: '300~999名', value: 999 },
-        { id: 'empcount_1000_4999', label: '1000~4999名', value: 4999 },
-        { id: 'empcount_5000_plus', label: '5000名以上', value: 5000 },
-      ],
-      branches: [],
-    },
-    {
-      id: 'Q5', title: '抱えている採用課題を教えてください。（複数選択・3つまで）', type: 'multi', maxSelections: 3,
-      options: [
-        { id: 'issue_branding', label: 'SNS・動画・記事・パンフレット・採用ページなどブランディングしたい', value: 'branding' },
-        { id: 'issue_multi_small', label: '幅広い職種を少人数ずつ採用したい', value: 'multi_small' },
-        { id: 'issue_unknown', label: '採用戦略や進め方がわからない', value: 'unknown' },
-        { id: 'issue_resource', label: '人事リソース不足', value: 'resource' },
-        { id: 'issue_pool', label: '母集団形成したい', value: 'pool' },
-        { id: 'issue_pdca', label: '採用のPDCAを回せない', value: 'pdca' },
-        { id: 'issue_requirements', label: '要件定義がわからない', value: 'requirements' },
-        { id: 'issue_cost', label: '採用コストを抑えたい', value: 'cost' },
-        { id: 'issue_knowledge', label: '採用ナレッジがない', value: 'knowledge' },
-      ],
-      branches: [
-        { key: 'issue', operator: 'includes', value: 'branding', target: 'branding' },
-        { key: 'issue', operator: 'includes', value: 'multi_small', target: 'multi_small' },
-        { key: 'issue', operator: 'includes', value: 'unknown', target: 'unknown' },
-      ],
-    },
-  ],
-  priorityRules: [
-    { id: 'engineer', target: 'R1' },
-    { id: 'branding', target: 'R2' },
-    { id: 'unknown', target: 'R3' },
-    { id: 'multi_small', target: 'R4' },
-    { id: 'high_volume', target: 'R5' },
-    { id: 'other', target: 'R6' },
-  ],
-  results: {
-    R1: {
-      title: 'エンジニアルート',
-      description: 'エンジニア採用に強いRPOプランのご提案',
-      ctaLabel: 'まず採用の困りごとを相談する',
-      ctaUrl: '#',
-      note: '自由追記枠',
-      comparisonTable: {
-        enabled: true,
-        columns: [
-          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
-          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
-          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
-        ],
-        rows: [
-          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '成果報酬', col_c: '固定＋成果' } },
-          { id: 'row_strength', label: '得意領域', cells: { col_a: '総合型', col_b: 'エンジニア特化', col_c: 'エンジニア特化' } },
-          { id: 'row_speed', label: 'スピード', cells: { col_a: '標準', col_b: '速い', col_c: '速い' } },
-          { id: 'row_ops', label: '運用体制', cells: { col_a: '部分代行', col_b: 'フル代行', col_c: '伴走＋代行' } },
-        ],
-      },
-      summaryBlock: {
-        title: '【全部入りでこのプラン】',
-        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
-        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
-        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
-        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
-        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
-      }
-    },
-    R2: {
-      title: 'ブランディングルート',
-      description: '採用ブランディング強化型RPO',
-      ctaLabel: 'まず採用の困りごとを相談する',
-      ctaUrl: '#',
-      note: '自由追記枠',
-      comparisonTable: {
-        enabled: true,
-        columns: [
-          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
-          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
-          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
-        ],
-        rows: [
-          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '制作費別途', col_b: '月額固定', col_c: '固定＋成果' } },
-          { id: 'row_brand', label: 'クリエイティブ', cells: { col_a: '制作のみ', col_b: 'SNS/動画', col_c: 'SNS/動画/記事まで一気通貫' } },
-          { id: 'row_tonemanner', label: 'トンマナ設計', cells: { col_a: '別途発注', col_b: '簡易対応', col_c: '採用基点で設計' } },
-        ],
-      },
-      summaryBlock: {
-        title: '【全部入りでこのプラン】',
-        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
-        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
-        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
-        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
-        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
-      }
-    },
-    R3: {
-      title: 'ゼロ知識ルート',
-      description: '採用0→1の伴走型RPO',
-      ctaLabel: 'まず採用の困りごとを相談する',
-      ctaUrl: '#',
-      note: '自由追記枠',
-      comparisonTable: {
-        enabled: true,
-        columns: [
-          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
-          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
-          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
-        ],
-        rows: [
-          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '固定', col_c: '固定＋成果' } },
-          { id: 'row_strategy', label: '戦略設計', cells: { col_a: '実務代行のみ', col_b: '簡易設計', col_c: '0→1設計・要件定義から伴走' } },
-          { id: 'row_kpi', label: 'KPI設計/モニタリング', cells: { col_a: 'レポート簡易', col_b: '標準レポート', col_c: '設計〜改善まで実施' } },
-          { id: 'row_ops', label: '運用代行', cells: { col_a: '部分のみ', col_b: 'フル代行', col_c: 'フル代行可' } },
-        ],
-      },
-      summaryBlock: {
-        title: '【全部入りでこのプラン】',
-        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
-        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
-        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
-        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
-        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
-      }
-    },
-    R4: {
-      title: '少人数×幅広い職種ルート',
-      description: '少人数・多職種に対応する柔軟型RPO',
-      ctaLabel: 'まず採用の困りごとを相談する',
-      ctaUrl: '#',
-      note: '自由追記枠',
-      comparisonTable: {
-        enabled: true,
-        columns: [
-          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
-          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
-          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
-        ],
-        rows: [
-          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '固定', col_c: '固定＋成果' } },
-          { id: 'row_flex', label: '対応範囲', cells: { col_a: '単職種前提', col_b: '複数職種可', col_c: '少人数×多職種に柔軟対応' } },
-          { id: 'row_channels', label: 'チャネル運用', cells: { col_a: '媒体限定', col_b: '複数媒体', col_c: '複数媒体/ダイレクト両対応' } },
-          { id: 'row_partial', label: '部分委託', cells: { col_a: 'フル委託前提', col_b: '部分可', col_c: '部分委託OK' } },
-        ],
-      },
-      summaryBlock: {
-        title: '【全部入りでこのプラン】',
-        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
-        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
-        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
-        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
-        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
-      }
-    },
-    R5: {
-      title: 'ハイボリューム採用ルート',
-      description: '年間50名以上の大量採用向けRPO',
-      ctaLabel: 'まず採用の困りごとを相談する',
-      ctaUrl: '#',
-      note: '自由追記枠',
-      comparisonTable: {
-        enabled: true,
-        columns: [
-          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
-          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
-          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
-        ],
-        rows: [
-          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '成果報酬', col_c: '固定＋成果' } },
-          { id: 'row_pool', label: '母集団形成', cells: { col_a: '媒体依存', col_b: '紹介中心', col_c: '説明会/イベント＋広告で大量集客' } },
-          { id: 'row_ops', label: '運用設計', cells: { col_a: 'スポット対応', col_b: '標準運用', col_c: '歩留まり改善を仕組み化' } },
-          { id: 'row_scale', label: 'スケール', cells: { col_a: '上限あり', col_b: '中規模まで', col_c: '年間50名〜想定で最適化' } },
-        ],
-      },
-      summaryBlock: {
-        title: '【全部入りでこのプラン】',
-        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
-        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
-        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
-        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
-        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
-      }
-    },
-    R6: {
-      title: '一般ルート',
-      description: '総合型RPOのご提案',
-      ctaLabel: 'まず採用の困りごとを相談する',
-      ctaUrl: '#',
-      note: '自由追記枠',
-      comparisonTable: {
-        enabled: true,
-        columns: [
-          { id: 'col_a', label: 'サービスA', image: { src: '/path/to/service_a.png', alt: 'サービスA' } },
-          { id: 'col_b', label: 'サービスB', image: { src: '/path/to/service_b.png', alt: 'サービスB' } },
-          { id: 'col_c', label: 'サービスC', image: { src: '/path/to/service_c.png', alt: 'サービスC' } },
-        ],
-        rows: [
-          { id: 'row_pricing', label: '料金モデル', cells: { col_a: '従量課金', col_b: '固定', col_c: '固定＋軽成果など柔軟' } },
-          { id: 'row_scope', label: '対応範囲', cells: { col_a: '媒体中心', col_b: '媒体＋選考', col_c: '媒体運用〜選考調整まで一括' } },
-          { id: 'row_support', label: '伴走度', cells: { col_a: 'オペ代行中心', col_b: '部分伴走', col_c: '体制設計から伴走' } },
-        ],
-      },
-      summaryBlock: {
-        title: '【全部入りでこのプラン】',
-        image: { src: '/path/to/primary.png', alt: '即戦力RPO' },
-        pricing: '月額XX万円〜（成果連動を含め柔軟に設定可）',
-        includes: ['母集団形成', 'クリエイティブ', '選考調整', 'PDCA', 'レポート', '伴走ミーティング'],
-        strengths: ['早期立ち上げ', '複数職種同時対応', '現場巻き込み設計'],
-        options: ['説明会・イベント', 'リファラル設計', 'ATS連携'],
-      }
-    },
-  },
-};
+  <script type="module">
+    const formArea = document.getElementById('form-area');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const resultList = document.getElementById('result-list');
+    const startBtn = document.getElementById('start');
+    const skipBtn = document.getElementById('skip');
 
-const state = { step: 0, answers: {}, errors: {} };
-const root = document.getElementById('diag-body');
-const progressEl = document.getElementById('diag-progress');
-const progressTextEl = document.getElementById('diag-progress-text');
+    const questions = [
+      { id: 'Q1', title: '現在の職務レベルは？', type: 'single', options: ['指示された作業が中心', '一人前の担当者', 'チームの中心メンバー', 'リーダー／主任', 'マネージャー', '事業責任者クラス'] },
+      { id: 'Q2', title: '担当業務の範囲は？', type: 'single', options: ['単一業務のみ', '複数業務を担当', '部門横断PJに参加', '事業全体に関わる仕事'] },
+      { id: 'Q3', title: '過去1年の成果レベルは？', type: 'single', options: ['成果なし・定性的', '一部目標達成', '目標達成', 'KPI大幅達成', '事業成果が大きい'] },
+      { id: 'Q4', title: '成果を数字で語れる度合いは？', type: 'single', options: ['数字で語れない', '一部のみ数字で説明', '明確な数字で説明できる'] },
+      { id: 'Q5', title: '専門スキルの市場価値は？', type: 'single', options: ['一般事務', '営業', 'マーケ/企画', 'IT/エンジニア', 'AI/データ/高度専門職'] },
+      { id: 'Q6', title: '業務上の裁量の大きさは？', type: 'single', options: ['指示された仕事中心', '一部裁量あり', '自ら意思決定', '戦略レベルの意思決定'] },
+      { id: 'Q7', title: '現在の年収は？', type: 'single', options: ['〜300万円', '300〜400万円', '400〜600万円', '600〜800万円', '800〜1000万円', '1000万円以上'] },
+      { id: 'Q8', title: '現在の役職は？', type: 'single', options: ['一般職', 'リーダー', 'マネージャー', '部長クラス', '事業責任者'] },
+      { id: 'Q9', title: '在籍年数の安定性は？', type: 'single', options: ['1年未満が多い', '2〜3年が多い', '3〜5年が多い', '5年以上が多い'] },
+      { id: 'Q10', title: '論理的思考力は？', type: 'single', options: ['弱い', '普通', '強い', '得意・仕事で活かせる'] },
+      { id: 'Q11', title: 'コミュニケーション／調整能力は？', type: 'single', options: ['苦手', '普通', '得意', '社内外の折衝を任される'] },
+      { id: 'Q12', title: 'AI／デジタルスキルは？', type: 'single', options: ['ほぼ使えない', '一般ツールを使える', '業務改善で使える', 'AI活用で成果を出している'] },
+      { id: 'Q13', title: '志望業界の経験は？', type: 'single', options: ['未経験', '1〜2年', '3〜5年', '5年以上'] },
+      { id: 'Q14', title: '志望職種の経験は？', type: 'single', options: ['未経験', '一部経験', '実務経験十分', '専門家レベル'] },
+      { id: 'Q15', title: '求めるスキルとの一致度は？', type: 'single', options: ['ほぼ一致しない', '一部一致', 'かなり一致', 'ほぼ一致'] },
+      { id: 'Q16', title: '最終学歴は？', type: 'single', options: ['その他', '日東駒専/地方国公立', 'MARCH/関関同立', '早慶', '旧帝大/海外トップ大'] },
+      { id: 'Q17', title: '資格の保有状況は？', type: 'single', options: ['なし', '一般資格', '国家資格・専門資格'] },
+      { id: 'Q18', title: '転職理由は前向きに説明できますか？', type: 'single', options: ['説明できない', '一部説明できる', 'ロジカルに説明できる'] },
+      { id: 'Q19', title: '継続力・安定性は？', type: 'single', options: ['続かないことが多い', '普通', '継続力が強み'] },
+      { id: 'Q20', title: 'リーダーシップ経験は？', type: 'single', options: ['経験なし', '小規模リーダー', 'プロジェクト以上を率いた経験'] },
+    ];
 
-function setProgress() {
-  const total = config.questions.length;
-  const answered = Math.min(state.step, total);
-  const pct = (answered / total) * 100;
-  progressEl.style.width = `${pct}%`;
-  if (progressTextEl) {
-    progressTextEl.textContent = `${answered}/${total} (${Math.round(pct)}%)`;
-  }
-}
+    let step = 0;
+    const answers = {};
 
-function checkCondition(condition) {
-  if (!condition) return true;
-  // 条件に該当する質問を探す
-  for (const qq of config.questions) {
-    for (const b of qq.branches || []) {
-      if (b.key === condition.key) {
-        const val = state.answers[qq.id];
-        if (!val) return false;
-        const opt = qq.options.find(o => o.id === val);
-        const v = opt?.value;
-        if (condition.operator === '==' && v === condition.value) return true;
-        if (condition.operator === '!=' && v !== condition.value) return true;
-        return false;
-      }
+    const sampleCompanies = [
+      { name: 'ニトリ', prob: 5.9 },
+      { name: 'ZOZO', prob: 5.4 },
+      { name: 'JR東日本', prob: 4.5 },
+      { name: '楽天', prob: 3.0 },
+      { name: 'Google', prob: 1.3 },
+    ];
+
+    function colorByProb(p) {
+      if (p >= 6) return ['#22c55e', 'GREEN'];
+      if (p >= 4) return ['#eab308', 'YELLOW'];
+      if (p >= 2) return ['#f97316', 'ORANGE'];
+      return ['#ef4444', 'RED'];
     }
-  }
-  return false;
-}
 
-function renderQuestion() {
-  let q = config.questions[state.step];
-  if (!q) return renderResult();
-  
-  // 条件付き質問の場合、条件を満たしていない場合はスキップ
-  if (q.condition && !checkCondition(q.condition)) {
-    state.step += 1;
-    return renderQuestion();
-  }
-  
-  setProgress();
-  const selected = state.answers[q.id] || (q.type === 'multi' ? [] : null);
-  const err = state.errors[q.id] || '';
-  root.innerHTML = `
-    <div class="question-card">
-      <h3>${q.title}</h3>
-      <div class="options">
-        ${q.options.map(opt => {
-          const active = q.type === 'multi' ? selected.includes(opt.id) : selected === opt.id;
-          return `<div class="opt ${active ? 'active' : ''}" data-id="${opt.id}">${opt.label}</div>`;
-        }).join('')}
-      </div>
-      ${err ? `<div class="error">${err}</div>` : ''}
-      <div class="footer-nav">
-        <button class="btn-secondary" id="btn-prev" ${state.step === 0 ? 'disabled' : ''}>戻る</button>
-        <button class="btn-primary" id="btn-next">${state.step === config.questions.length - 1 ? '結果を見る' : '次へ'}</button>
-      </div>
-    </div>
-  `;
-  root.querySelectorAll('.opt').forEach(el => {
-    el.addEventListener('click', () => {
-      if (q.type === 'multi') {
-        const arr = new Set(selected);
-        const wasSelected = arr.has(el.dataset.id);
-        const max = q.maxSelections || Infinity;
-        if (!wasSelected && arr.size >= max) {
-          state.errors[q.id] = `最大${max}つまで選択できます`;
+    function renderResults(companies = sampleCompanies) {
+      resultList.innerHTML = companies.map((c, i) => {
+        const [color, label] = colorByProb(c.prob);
+        const pct = Math.min(c.prob / 6, 1) * 100;
+        return `
+          <div class="meter">
+            <div>
+              <div style="font-weight:700;">${i + 1}. ${c.name}</div>
+              <div class="meter-bar">
+                <div class="meter-fill" style="width:${pct}%; background: linear-gradient(90deg, ${color}, ${color}80);"></div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:800; font-size:16px;">${c.prob.toFixed(1)}%</div>
+              <div class="tag" style="color:${color}; border-color:${color}55;">${label}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setProgress() {
+      const pct = Math.round((step / questions.length) * 100);
+      progressBar.style.width = `${pct}%`;
+      progressText.textContent = `${step}/${questions.length} (${pct}%)`;
+    }
+
+    function renderQuestion() {
+      setProgress();
+      const q = questions[step];
+      if (!q) { renderResults(); return; }
+      const selected = answers[q.id];
+      formArea.innerHTML = `
+        <div class="question-card">
+          <div class="question-title">${q.title}</div>
+          <div class="options">
+            ${q.options.map(opt => {
+              const active = selected === opt ? 'active' : '';
+              return `<div class="opt ${active}" data-val="${opt}">${opt}</div>`;
+            }).join('')}
+          </div>
+          <div class="nav">
+            <button class="btn btn-secondary" id="prev" ${step === 0 ? 'disabled' : ''}>戻る</button>
+            <button class="btn btn-primary" id="next">${step === questions.length - 1 ? '結果を見る' : '次へ'}</button>
+          </div>
+        </div>
+      `;
+      formArea.querySelectorAll('.opt').forEach(el => {
+        el.addEventListener('click', () => {
+          answers[q.id] = el.dataset.val;
           renderQuestion();
-          return;
-        }
-        arr.has(el.dataset.id) ? arr.delete(el.dataset.id) : arr.add(el.dataset.id);
-        state.answers[q.id] = Array.from(arr);
-        state.errors[q.id] = '';
-      } else {
-        state.answers[q.id] = el.dataset.id;
-      }
-      renderQuestion();
-    });
-  });
-  root.querySelector('#btn-prev').addEventListener('click', () => { state.step = Math.max(0, state.step - 1); renderQuestion(); });
-  root.querySelector('#btn-next').addEventListener('click', () => {
-    if (!state.answers[q.id] || (Array.isArray(state.answers[q.id]) && state.answers[q.id].length === 0)) {
-      state.errors[q.id] = '選択してください';
-      renderQuestion();
-      return;
+        });
+      });
+      formArea.querySelector('#prev').addEventListener('click', () => {
+        step = Math.max(0, step - 1);
+        renderQuestion();
+      });
+      formArea.querySelector('#next').addEventListener('click', () => {
+        if (!answers[q.id]) return;
+        step += 1;
+        renderQuestion();
+      });
     }
-    state.errors[q.id] = '';
-    state.step += 1;
+
+    startBtn.addEventListener('click', () => { step = 0; renderQuestion(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    skipBtn.addEventListener('click', () => { renderResults(); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); });
+
+    // initial render
     renderQuestion();
-  });
-}
-
-function evalBranches() {
-  const hits = new Set();
-  for (const q of config.questions) {
-    const val = state.answers[q.id];
-    if (!val || !q.branches || q.branches.length === 0) continue;
-    for (const b of q.branches) {
-      if (b.key === 'recruit_type') {
-        const opt = q.options.find(o => o.id === val);
-        const v = opt?.value;
-        if (b.operator === '==' && v === b.value) hits.add(b.target);
-      }
-      if (b.key === 'headcount') {
-        const opt = q.options.find(o => o.id === val);
-        const num = opt?.value ?? 0;
-        if (b.operator === '>=' && num >= b.value) hits.add(b.target);
-        if (b.operator === '<' && num < b.value) hits.add(b.target);
-      }
-      if (b.key === 'role') {
-        const opt = q.options.find(o => o.id === val);
-        const v = opt?.value;
-        if (b.operator === '==' && v === b.value) hits.add(b.target);
-        if (b.operator === '!=' && v !== b.value) hits.add(b.target);
-      }
-      if (b.key === 'issue' && Array.isArray(val)) {
-        const vals = val.map(id => q.options.find(o => o.id === id)?.value);
-        if (b.operator === 'includes' && vals.includes(b.value)) hits.add(b.target);
-      }
-    }
-  }
-  return hits;
-}
-
-function decideResult() {
-  const hits = evalBranches();
-  for (const rule of config.priorityRules) {
-    if (rule.id === 'other') return rule.target; // fallback
-    if (hits.has(rule.id)) return rule.target;
-  }
-  return config.priorityRules.at(-1)?.target || 'R6';
-}
-
-function renderResult() {
-  setProgress();
-  const rid = decideResult();
-  const res = config.results[rid];
-  if (!res) { root.innerHTML = '<div class="result-card">結果が取得できませんでした。</div>'; return; }
-  const table = renderTable(res.comparisonTable);
-  const summary = renderSummary(res.summaryBlock, res);
-  root.innerHTML = `
-    <div class="result-card">
-      <h3>${res.title}</h3>
-      ${res.description ? `<p class="muted">${res.description}</p>` : ''}
-      ${res.note ? `<p class="muted">${res.note}</p>` : ''}
-      <div style="margin: 12px 0; font-weight: 700;">あなたにおすすめの採用代行はこちら</div>
-      ${table}
-      ${summary}
-    </div>
-  `;
-}
-
-function renderSummary(summary, res) {
-  if (!summary) return '';
-  return `
-    <div style="margin-top: 24px; padding: 16px; background: rgba(245,75,2,0.05); border-radius: 10px; border: 1px solid rgba(245,75,2,0.2);">
-      <h4 style="margin: 0 0 12px; color: var(--color-primary);">${summary.title || '【全部入りでこのプラン】'}</h4>
-      ${summary.image?.src ? `<div style="margin: 8px 0;"><img src="${summary.image.src}" alt="${summary.image.alt || ''}" style="max-width: 100%; height: auto; border-radius: 8px;"></div>` : ''}
-      ${summary.pricing ? `<p style="margin: 8px 0; font-weight: 700; font-size: 16px;">${summary.pricing}</p>` : ''}
-      ${summary.includes && summary.includes.length > 0 ? `
-        <div style="margin: 12px 0;">
-          <strong>含まれるもの:</strong>
-          <ul style="margin: 4px 0; padding-left: 20px;">
-            ${summary.includes.map(item => `<li>${item}</li>`).join('')}
-          </ul>
-        </div>
-      ` : ''}
-      ${summary.strengths && summary.strengths.length > 0 ? `
-        <div style="margin: 12px 0;">
-          <strong>強み:</strong>
-          <ul style="margin: 4px 0; padding-left: 20px;">
-            ${summary.strengths.map(item => `<li>${item}</li>`).join('')}
-          </ul>
-        </div>
-      ` : ''}
-      ${summary.options && summary.options.length > 0 ? `
-        <div style="margin: 12px 0;">
-          <strong>オプション:</strong>
-          <ul style="margin: 4px 0; padding-left: 20px;">
-            ${summary.options.map(item => `<li>${item}</li>`).join('')}
-          </ul>
-        </div>
-      ` : ''}
-      <div class="cta-area" style="margin-top: 16px;">
-        <a class="btn-primary" style="text-decoration:none;" href="${res.ctaUrl || '#'}" target="_blank" rel="noopener">${res.ctaLabel || 'まず採用の困りごとを相談する'}</a>
-      </div>
-    </div>
-  `;
-}
-
-function renderTable(comp) {
-  if (!comp || comp.enabled === false || !comp.columns?.length) return '';
-  const header = comp.columns.map(c => `<th>${c.label}${c.image?.src ? `<br><img src="${c.image.src}" alt="${c.image.alt || ''}" style="max-height:32px;">` : ''}</th>`).join('');
-  const rows = (comp.rows || []).map(r => {
-    const cells = comp.columns.map(c => `<td>${(r.cells || {})[c.id] || ''}</td>`).join('');
-    return `<tr><th>${r.label}</th>${cells}</tr>`;
-  }).join('');
-  return `<table class="table"><tr><th></th>${header}</tr>${rows}</table>`;
-}
-
-// Boot
-renderQuestion();
-</script>
+    renderResults();
+  </script>
 </body>
 </html>
