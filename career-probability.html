@@ -154,37 +154,34 @@
         <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
         <div class="progress-text" id="progress-text">0/20 (0%)</div>
       </div>
+      <div class="error" id="error-message" style="display:none; color:#ef4444; margin-bottom:12px;"></div>
       <div id="form-area"></div>
-      <div id="result-section" style="display:none; margin-top:16px;">
-        <h3 style="margin:0 0 6px;">合格可能性メーター</h3>
-        <div class="result-list" id="result-list"></div>
-      </div>
     </div>
   </div>
 
   <script type="module">
-    // 設問定義（20問）
+    // 設問定義（20問）- 改善版：具体的・客観的・偏見を排除
     const questions = [
-      { id: 'Q1', title: '現在の役割・責任範囲は？', options: ['指示中心の業務が主', '担当として自立', 'チームの中核メンバー', 'リーダー／主任クラス', 'マネージャークラス', '事業責任者クラス'] },
-      { id: 'Q2', title: '担当業務の幅は？', options: ['単一業務に限定', '複数業務を担当', '部門横断プロジェクトに参加', '事業全体に関わる'] },
-      { id: 'Q3', title: '過去1年の成果水準は？', options: ['定性的・未達', '一部目標達成', '目標達成', 'KPIを大幅達成', '事業成果を大きく創出'] },
-      { id: 'Q4', title: '成果を定量で説明できる度合いは？', options: ['ほぼ説明できない', '一部のみ定量で説明', '明確な数字で説明できる'] },
-      { id: 'Q5', title: '主な専門領域は？', options: ['一般事務・アシスタント', '営業・セールス', 'マーケ/企画/PdM', 'IT/エンジニア', 'AI/データ/高度専門'] },
-      { id: 'Q6', title: '意思決定の裁量は？', options: ['指示ベースで実行', '一部を自律判断', '担当領域で意思決定', '戦略レベルで意思決定'] },
-      { id: 'Q7', title: '現在の年収レンジは？', options: ['〜300万円', '300〜400万円', '400〜600万円', '600〜800万円', '800〜1000万円', '1000万円以上'] },
-      { id: 'Q8', title: '現在の役職は？', options: ['一般職', 'リーダー', 'マネージャー', '部長クラス', '事業責任者'] },
-      { id: 'Q9', title: '在籍期間の安定性は？', options: ['1年未満が多い', '2〜3年が多い', '3〜5年が多い', '5年以上が多い'] },
-      { id: 'Q10', title: '論理的思考の強みは？', options: ['弱い', '平均的', '強い', '得意で成果に活かせる'] },
-      { id: 'Q11', title: 'コミュニケーション／調整力は？', options: ['課題がある', '平均的', '得意', '社内外折衝を任される'] },
-      { id: 'Q12', title: 'デジタル・AI活用レベルは？', options: ['ほぼ使えない', '一般ツールは使える', '業務改善に活用できる', 'AI活用で成果を出している'] },
-      { id: 'Q13', title: '志望業界の経験年数は？', options: ['未経験', '1〜2年', '3〜5年', '5年以上'] },
-      { id: 'Q14', title: '志望職種の経験レベルは？', options: ['未経験', '一部経験あり', '十分な実務経験', '専門家レベル'] },
-      { id: 'Q15', title: '求めるスキルとの一致度は？', options: ['ほぼ一致しない', '一部一致', 'かなり一致', 'ほぼ一致'] },
-      { id: 'Q16', title: '最終学歴は？', options: ['その他', '日東駒専/地方国公立', 'MARCH/関関同立', '早慶', '旧帝大/海外トップ大'] },
-      { id: 'Q17', title: '資格の保有状況は？', options: ['なし', '一般資格', '国家資格・専門資格'] },
-      { id: 'Q18', title: '転職理由の説明力は？', options: ['整理できていない', '一部説明できる', 'ロジカルに説明できる'] },
-      { id: 'Q19', title: '継続力・安定性は？', options: ['続かないことが多い', '平均的', '継続力が強み'] },
-      { id: 'Q20', title: 'リーダーシップ経験は？', options: ['経験なし', '小規模リーダー', 'プロジェクト以上を率いた経験'] },
+      { id: 'Q1', title: '年齢を教えてください', options: ['20代', '30代', '40代', '50代', '60代以上'] },
+      { id: 'Q2', title: '現在の職種はどれに該当しますか', options: ['一般事務・アシスタント', '営業・セールス', 'マーケティング・企画・PdM', 'IT・エンジニア', 'AI・データ・高度専門職', 'その他専門職'] },
+      { id: 'Q3', title: '現在の役職・職位はどれに該当しますか', options: ['一般職', 'リーダー・主任', 'マネージャー', '部長・ディレクター', '事業責任者・役員'] },
+      { id: 'Q4', title: '現在の年収はどれに該当しますか', options: ['〜300万円', '300〜400万円', '400〜600万円', '600〜800万円', '800〜1000万円', '1000万円以上'] },
+      { id: 'Q5', title: '現在の職種での実務経験年数は', options: ['1年未満', '1〜3年', '3〜5年', '5〜10年', '10年以上'] },
+      { id: 'Q6', title: '過去1年間で達成した具体的な成果はありますか（売上・利益・コスト削減・ユーザー数など）', options: ['成果なし', '定性的な成果のみ', '一部で数値目標を達成', '主要な数値目標を達成', '数値目標を大幅に達成'] },
+      { id: 'Q7', title: '月間の売り上げは？', options: ['なし（売上に関与していない）', '30万円未満', '30万円〜50万円', '50万円〜100万円', '100万円〜200万円', '200万円〜500万円', '500万円〜1000万円', '1000万円以上'] },
+      { id: 'Q8', title: '担当している業務の範囲は', options: ['単一業務のみ', '複数業務を担当', '部門横断プロジェクトに参加', '事業全体に関わる業務'] },
+      { id: 'Q9', title: '業務上の意思決定権限はどの程度ありますか', options: ['指示された業務を実行', '一部の業務で自律判断', '担当領域で意思決定', '戦略レベルの意思決定'] },
+      { id: 'Q10', title: '現在の会社での在籍年数は', options: ['1年未満', '1〜3年', '3〜5年', '5〜10年', '10年以上'] },
+      { id: 'Q11', title: '転職回数は（現在の会社を含む）', options: ['1社のみ（転職経験なし）', '2社', '3社', '4社', '5社以上'] },
+      { id: 'Q12', title: '最終学歴は', options: ['高卒・専門卒', '日東駒専・地方国公立', 'MARCH・関関同立', '早慶', '旧帝大・海外トップ大'] },
+      { id: 'Q13', title: '保有している資格は（複数該当可）', options: ['資格なし', 'TOEIC（700点以上）・簿記2級・基本情報技術者など', '税理士・公認会計士・弁護士・医師・薬剤師・中小企業診断士・社会保険労務士・行政書士・宅建士など'] },
+      { id: 'Q14', title: '志望する業界での経験年数は', options: ['未経験', '1〜2年', '3〜5年', '5〜10年', '10年以上'] },
+      { id: 'Q15', title: '志望する職種での経験年数は', options: ['未経験', '1〜2年', '3〜5年', '5〜10年', '10年以上'] },
+      { id: 'Q16', title: '志望企業が求めるスキルとの一致度は', options: ['ほぼ一致しない', '一部一致', 'かなり一致', 'ほぼ一致'] },
+      { id: 'Q17', title: 'プログラミング・デジタルツールの活用経験は', options: ['ほぼ使えない', 'Excel・Wordなど一般ツール', '業務改善でツールを活用', 'プログラミング・AI活用で成果を出している'] },
+      { id: 'Q18', title: 'プロジェクト管理・推進経験は？', options: ['経験なし', '小規模プロジェクト（3名以下）', '中規模プロジェクト（5〜10名）', '大規模プロジェクト（10名以上）', '複数プロジェクトを同時管理', '事業レベルのプロジェクトを主導'] },
+      { id: 'Q19', title: '社内外のステークホルダーとの調整・交渉経験は', options: ['経験なし', '社内のみ', '社外との調整経験あり', '社内外の重要な交渉を担当'] },
+      { id: 'Q20', title: '学習意欲・成長志向は？', options: ['現状維持志向', '必要に応じて学ぶ', '積極的にスキルアップしている', '常に新しい知識・スキルを習得している'] },
     ];
 
     // 企業リスト（300社）
@@ -281,28 +278,28 @@
 
     const rankToNeeded = { A:80, B:70, C:60, D:50, E:40, F:30 };
 
-    // 質問ごとの点数（要件定義に準拠）
+    // 質問ごとの点数（新しい質問に合わせて更新）
     const questionPoints = {
-      Q1:[0,4,6,7,9,10],
-      Q2:[0,4,7,10],
-      Q3:[0,4,6,8,10],
-      Q4:[0,2,5],
-      Q5:[0,4,6,8,10],
-      Q6:[0,2,4,5],
-      Q7:[0,3,5,7,9,10],
-      Q8:[0,3,6,8,10],
-      Q9:[0,1,2,3],
-      Q10:[0,2,4,5],
-      Q11:[0,2,4,5],
-      Q12:[0,2,4,5],
-      Q13:[0,3,7,10],
-      Q14:[0,3,7,10],
-      Q15:[0,3,7,10],
-      Q16:[1,2,3,4,5],
-      Q17:[0,1,2],
-      Q18:[0,2,5],
-      Q19:[0,2,5],
-      Q20:[0,2,5],
+      Q1:[0,2,4,6,8], // 年齢
+      Q2:[0,4,6,8,10,6], // 職種
+      Q3:[0,3,6,8,10], // 役職
+      Q4:[0,3,5,7,9,10], // 年収
+      Q5:[0,2,4,6,8], // 経験年数
+      Q6:[0,2,4,6,8,10], // 成果
+      Q7:[0,1,2,3,4,5,6,7], // 月間売上
+      Q8:[0,4,7,10], // 業務範囲
+      Q9:[0,2,4,5], // 意思決定
+      Q10:[0,1,2,3,4], // 在籍年数
+      Q11:[0,1,2,3,4], // 転職回数（少ない方が高評価）
+      Q12:[1,2,3,4,5], // 学歴
+      Q13:[0,1,2], // 資格
+      Q14:[0,3,7,9,10], // 業界経験
+      Q15:[0,3,7,9,10], // 職種経験
+      Q16:[0,3,7,10], // スキル一致度
+      Q17:[0,2,4,5], // デジタルスキル
+      Q18:[0,2,4,6,8,10], // プロジェクト管理経験
+      Q19:[0,2,4,5], // 調整・交渉
+      Q20:[0,2,4,5], // 学習意欲・成長志向
     };
 
     function calcScores(answers) {
@@ -314,18 +311,26 @@
         const ptsArr = questionPoints[id] || [];
         return ptsArr[idx] ?? 0;
       };
-      const S_exp = get('Q1')+get('Q2')+get('Q3')+get('Q4')+get('Q5')+get('Q6');
-      const S_income = get('Q7')+get('Q8')+get('Q9');
-      const S_skill = get('Q10')+get('Q11')+get('Q12');
-      const S_fit = get('Q13')+get('Q14')+get('Q15');
-      const S_academic = get('Q16')+get('Q17');
-      const S_person = get('Q18')+get('Q19')+get('Q20');
-      const 職務経験 = (S_exp / 50) * 40;
-      const 年収役職 = (S_income / 23) * 20;
-      const スキル汎用性 = (S_skill / 15) * 15;
-      const フィット度 = (S_fit / 30) * 15;
-      const 学歴資格 = (S_academic / 7) * 5;
-      const 人物特性 = (S_person / 15) * 5;
+      // 新しい質問構成に合わせて再マッピング
+      // 職務経験: Q5(経験年数) + Q6(成果) + Q7(数値説明) + Q8(業務範囲) + Q9(意思決定) + Q10(在籍年数)
+      const S_exp = get('Q5')+get('Q6')+get('Q7')+get('Q8')+get('Q9')+get('Q10');
+      // 年収役職: Q3(役職) + Q4(年収) + Q11(転職回数、逆転)
+      const S_income = get('Q3')+get('Q4')+(4-get('Q11')); // 転職回数は少ない方が高評価
+      // スキル汎用性: Q17(デジタル) + Q18(プロジェクト管理) + Q19(調整・交渉)
+      const S_skill = get('Q17')+get('Q18')+get('Q19');
+      // フィット度: Q14(業界経験) + Q15(職種経験) + Q16(スキル一致度)
+      const S_fit = get('Q14')+get('Q15')+get('Q16');
+      // 学歴資格: Q12(学歴) + Q13(資格)
+      const S_academic = get('Q12')+get('Q13');
+      // 人物特性: Q20(転職理由説明)
+      const S_person = get('Q20');
+      // 正規化（最大値を調整）
+      const 職務経験 = (S_exp / 50) * 40; // 最大50点想定
+      const 年収役職 = (S_income / 30) * 20; // 最大30点想定
+      const スキル汎用性 = (S_skill / 20) * 15; // 最大20点想定（Q17:5 + Q18:10 + Q19:5）
+      const フィット度 = (S_fit / 30) * 15; // 最大30点想定
+      const 学歴資格 = (S_academic / 7) * 5; // 最大7点想定
+      const 人物特性 = (S_person / 5) * 5; // 最大5点想定
       const total = 職務経験 + 年収役職 + スキル汎用性 + フィット度 + 学歴資格 + 人物特性;
       return { total, axes: [職務経験, 年収役職, スキル汎用性, フィット度, 学歴資格 + 人物特性] };
     }
@@ -338,96 +343,35 @@
       const gap = marketValue - needed * arch.k;
       // ばらつき用バイアス（社名から決定的に生成）
       const seed = (name.charCodeAt(0) + name.length * 17) % 17; // 0-16
-      const bias = (seed - 8) * 0.08; // -0.64〜0.64
-      // 基本分布: 95%が1〜6%に収まるレンジ
-      const base = 1 + 5 * sigmoid((gap + bias*4.5) / 3.0); // おおむね1〜6%
-      // 微細揺らぎ（±0.2%程度）
-      const micro = bias * 0.25;
-      // 高スコアの尾を持ち上げるボーナス（gap>12で発動）、最大10%まで
-      const bonus = gap > 12 ? Math.min(4, ((gap - 12) / 3) * (1 + bias * 0.5)) : 0;
-      const prob = Math.min(10, Math.max(1, base + micro + bonus)); // 1〜10%
+      const bias = (seed - 8) * 0.12; // -0.96〜0.96
+      // 基本分布: 10〜60%レンジ、95%が10〜30%に収まるように調整
+      const base = 10 + 20 * sigmoid((gap + bias*3.5) / 2.8); // おおむね10〜30%
+      // 微細揺らぎ（±2%程度）
+      const micro = bias * 2.5;
+      // 高スコアの尾を持ち上げるボーナス（gap>10で発動）、最大60%まで
+      const bonus = gap > 10 ? Math.min(30, ((gap - 10) / 2.5) * (1 + bias * 0.3)) : 0;
+      const prob = Math.min(60, Math.max(10, base + micro + bonus)); // 10〜60%
       return prob;
     }
 
-    let lastResults = null;
-
     function generateResults(scores){
       const marketValue = scores.total;
-      const list = companies.map((name) => {
+      return companies.map((name) => {
         const arch = companyToArch[name] || 'A4';
         const prob = computeProb(marketValue, arch, name);
         return { name, prob };
       }).sort((a,b)=> b.prob - a.prob || a.name.localeCompare(b.name));
-      lastResults = list;
-      return list;
     }
 
-    // 4段階の色判定（閾値は実際の%: 1〜10%スケール）
+    // 4段階の色判定（閾値は実際の%: 10〜60%スケール）
     function colorByProb(p) {
-      if (p >= 6) return ['#22c55e', 'GREEN'];
-      if (p >= 4) return ['#eab308', 'YELLOW'];
-      if (p >= 2) return ['#f97316', 'ORANGE'];
+      if (p >= 40) return ['#22c55e', 'GREEN'];
+      if (p >= 25) return ['#eab308', 'YELLOW'];
+      if (p >= 15) return ['#f97316', 'ORANGE'];
       return ['#ef4444', 'RED'];
     }
 
-    // メーター描画（300件）
-    function renderResults(list) {
-      const resultList = document.getElementById('result-list');
-      resultList.innerHTML = list.map((c, i) => {
-        const [color, label] = colorByProb(c.prob);
-        // メーターは0-10%を0-100%幅に換算
-        const pct = Math.min(c.prob / 10 * 100, 100);
-        return `
-          <div class="meter">
-            <div>
-              <div style="font-weight:700;">${i + 1}. ${c.name}</div>
-              <div class="meter-bar">
-                <div class="meter-fill" style="width:${pct}%; background: linear-gradient(90deg, ${color}, ${color}88);"></div>
-              </div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-weight:800; font-size:16px;">${c.prob.toFixed(1)}%</div>
-              <div class="tag" style="color:${color}; border-color:${color}55;">${label}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
 
-    // レーダーチャート描画（軸ごとの満点を考慮）
-    function renderRadar(axes){
-      const labels = ['職務経験','役職','スキル汎用性','フィット度','人物'];
-      const maxByAxis = [40,20,15,15,10]; // 各軸の満点（合計100）
-      const svgSize = 360;
-      const cx = svgSize/2, cy = svgSize/2, r = 140;
-      const ratios = axes.map((v,i)=> Math.max(0, Math.min(1, v / (maxByAxis[i]||20))));
-      const points = ratios.map((ratio,i)=>{
-        const angle = -Math.PI/2 + (2*Math.PI*i/ratios.length);
-        const rr = ratio*r;
-        const x = cx + rr*Math.cos(angle);
-        const y = cy + rr*Math.sin(angle);
-        return `${x},${y}`;
-      }).join(' ');
-      const grid = [0.2,0.4,0.6,0.8,1].map(f=>{
-        const pts = ratios.map((_,i)=>{
-          const angle = -Math.PI/2 + (2*Math.PI*i/ratios.length);
-          const rr = f*r;
-          const x = cx + rr*Math.cos(angle);
-          const y = cy + rr*Math.sin(angle);
-          return `${x},${y}`;
-        }).join(' ');
-        return `<polygon points="${pts}" fill="none" stroke="#e9e5dd" stroke-width="1"/>`;
-      }).join('');
-      const labelNodes = labels.map((txt,i)=>{
-        const angle = -Math.PI/2 + (2*Math.PI*i/ratios.length);
-        const rr = r+26;
-        const x = cx + rr*Math.cos(angle);
-        const y = cy + rr*Math.sin(angle);
-        return `<text class="radar-label" x="${x}" y="${y}" fill="#6b7280" font-size="12" text-anchor="middle" dominant-baseline="middle">${txt}</text>`;
-      }).join('');
-      const poly = `<polygon class="radar-poly" points="${points}" fill="rgba(255,107,3,0.18)" stroke="#ff6b03" stroke-width="2"/>`;
-      return `<svg width="100%" height="100%" viewBox="0 0 ${svgSize} ${svgSize}" preserveAspectRatio="xMidYMid meet" aria-label="radar" style="max-width:${svgSize}px; height:auto;">${grid}${poly}${labelNodes}</svg>`;
-    }
 
     // フォーム描画
     let step = 0;
@@ -436,7 +380,7 @@
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     const formArea = document.getElementById('form-area');
-    const resultSection = document.getElementById('result-section');
+    const errorMessage = document.getElementById('error-message');
 
     function setProgress() {
       const answered = Math.min(step, questions.length);
@@ -452,10 +396,9 @@
       if (!q) {
         const scores = calcScores(answers);
         const results = generateResults(scores);
-        renderResults(results);
-        renderQuestionCompletion(scores);
-        resultSection.style.display = 'block';
-        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 結果をlocalStorageに保存して結果ページへ遷移
+        localStorage.setItem('diagnosticResults', JSON.stringify({ scores, results, answers }));
+        window.location.href = 'career-probability-result.html';
         return;
       }
       const selected = answers[q.id];
@@ -511,24 +454,14 @@
     function renderQuestionCompletion(scores){
       formArea.innerHTML = `
         <div class="question-card" style="text-align:center;">
-          <div class="question-title">診断完了！ あなたの市場価値スコア</div>
-          <div style="display:flex; justify-content:center; padding:8px 0;">${renderRadar(scores.axes)}</div>
-          <div style="margin-top:8px; color:#6b7280; font-size:13px;">総合スコア: ${scores.total.toFixed(1)} / 100</div>
+          <div class="question-title">診断完了！ 結果を計算中...</div>
+          <div style="margin-top:8px; color:#6b7280;">結果ページへ遷移します</div>
         </div>
       `;
     }
 
     // 初期描画（質問から開始）
     renderQuestion();
-
-    // 結果セクション再表示用（万一表示されない場合の保険）
-    window.showResultsManually = () => {
-      if (lastResults) {
-        renderResults(lastResults);
-        resultSection.style.display = 'block';
-        resultSection.scrollIntoView({ behavior:'smooth', block:'start' });
-      }
-    };
   </script>
 </body>
 </html>
