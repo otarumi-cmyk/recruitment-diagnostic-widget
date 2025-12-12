@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>診断結果 - 人気300企業 転職可能性診断</title>
+  <style>
+    :root {
+      --bg: #f8f7f4;
+      --panel: #ffffff;
+      --border: #e9e5dd;
+      --primary: #ff6b03;
+      --primary-2: #ffa347;
+      --text: #1f2933;
+      --muted: #6b7280;
+      --radius: 16px;
+      --font: 'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+      --shadow: 0 16px 40px rgba(0,0,0,0.10);
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(circle at 20% 20%, rgba(255,107,3,0.07), transparent 26%),
+                  radial-gradient(circle at 80% 0%, rgba(255,163,71,0.08), transparent 22%),
+                  var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .shell {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+    .hero {
+      padding: 24px 28px;
+      background: linear-gradient(135deg, rgba(255,107,3,0.10), rgba(255,163,71,0.10));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: 0.01em; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      padding: 20px;
+    }
+    .question-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fffaf5;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .result-list { display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow: auto; padding-right: 4px; }
+    .meter {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fffaf5;
+    }
+    .meter-bar {
+      position: relative;
+      width: 100%;
+      height: 12px;
+      background: #f4ede5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .meter-fill { position: absolute; inset: 0; width: 20%; border-radius: 999px; }
+    .tag { padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); }
+    .muted { color: var(--muted); font-size: 14px; }
+    .radar-poly { transform-origin: center; animation: radarGrow 0.9s ease-out forwards; opacity: 0; }
+    .radar-label { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
+    @keyframes radarGrow { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(255,107,3,0.26);
+    }
+    .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      .hero { padding: 18px; }
+      .meter { padding: 10px; }
+      .meter div { font-size: 14px; }
+      .meter .tag { font-size: 11px; }
+      .result-list { max-height: 400px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="hero">
+      <h1>診断結果</h1>
+      <p class="muted">あなたの市場価値と300社の合格可能性</p>
+    </div>
+
+    <div class="panel">
+      <div id="radar-area"></div>
+      <div style="margin-top: 24px;">
+        <h3 style="margin:0 0 12px;">合格可能性メーター（300社）</h3>
+        <div class="result-list" id="result-list"></div>
+      </div>
+      <div style="margin-top: 24px; text-align: center;">
+        <a href="career-probability.html" class="btn btn-primary">もう一度診断する</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 企業リスト（300社）
+    const companies = [
+      // 1-50
+      'トヨタ自動車','グーグル','ソニー','楽天グループ','キーエンス','任天堂','パナソニック','アマゾンジャパン','Apple Japan','伊藤忠商事',
+      '三菱商事','ソフトバンク','本田技研工業（Honda）','味の素','全日本空輸（ANA）','サントリーホールディングス','東日本電信電話（NTT東日本）','ファーストリテイリング','西日本電信電話（NTT西日本）','日本航空（JAL）',
+      '日本マイクロソフト','リクルートホールディングス','LINEヤフー','オリエンタルランド','東日本旅客鉄道（JR東日本）','三井物産','資生堂','明治','イオン','アクセンチュア',
+      '東海旅客鉄道（JR東海）','カゴメ','日立製作所','NTTドコモ','花王','NTTデータ','日本電気（NEC）','電通','富士通','東京海上日動火災保険',
+      'バンダイナムコホールディングス','デンソー','三井不動産','バンダイ','KDDI','未来工業','JTB','フジテレビジョン','武田薬品工業','日本たばこ産業（JT）',
+      // 51-100
+      '丸紅','JR西日本','ニトリ','東芝','NRI（野村総合研究所）','ZOZO','富士フイルム','良品計画','IBM Japan','キヤノン',
+      'カルビー','三菱UFJ銀行','東京エレクトロン','村田製作所','日本中央競馬会（JRA）','AGC','サイバーエージェント','日産自動車','オムロン','旭化成',
+      '三菱地所','スターバックス コーヒー ジャパン','三菱電機','日本コカ・コーラ','キリンホールディングス','TOTO','タニタ','DeNA','積水ハウス','ゴールドマン・サックス',
+      'アステラス製薬','集英社','日本郵船','日本テレビ（NTV）','みずほ銀行','クボタ','住友商事','サンリオ','三菱重工','第一三共',
+      '日本銀行','三井住友銀行','スクウェア・エニックス','サイボウズ','清水建設','アサヒビール','シャープ','博報堂','マツダ','鹿島建設',
+      // 101-150
+      'しまむら','セガサミーHD','NHK','日本製鉄','キユーピー','大林組','江崎グリコ','ローソン','大成建設','京セラ',
+      'テスラ','ウォルト・ディズニー・ジャパン','OpenAI','大和ハウス工業','ヤクルト本社','東京都庁','ヤマハ','ブルボン','スズキ','Meta',
+      '竹中工務店','メルカリ','アイシン','SUBARU','キッコーマン','マッキンゼー','ファナック','東レ','中外製薬','九州電力',
+      '講談社','野村證券','タカラトミー','ベネッセコーポレーション','信越化学','日清食品','ロッテ','セイコーエプソン','阪神タイガース','不二家',
+      'ダイキン工業','コナミグループ','日本マクドナルド','アイリスオーヤマ','日本生命保険','コクヨ','日本赤十字社','JR九州','ニデック','デロイトトーマツコンサルティング',
+      // 151-200
+      '森永製菓','セブン-イレブン・ジャパン','日本郵便','JAXA','SCSK','コーセー','P&Gジャパン','キリンビール','山崎製パン','川崎重工',
+      'TOPPAN','Sky（スカイ）','日本ガイシ','IHI','ファンケル','伊藤園','阪急電鉄','大塚製薬','サッポロビール','吉本興業HD',
+      '住友林業','タミヤ','森ビル','三菱ケミカル','コストコ','TBS','ジャパネットたかた','読売ジャイアンツ','佐川急便','東京メトロ',
+      'ユニバーサルミュージック','東宝','第一生命','マツモトキヨシ','東北電力','島津製作所','ダイハツ工業','モンベル','エーザイ','HIS',
+      'Alphabet','Nike Japan','ファミリーマート','PwC','BCG','テレビ朝日','レゴジャパン','日本オラクル','北海道電力','関西電力',
+      // 201-250
+      'マイナビ','MIXI','大創産業（ダイソー）','東京電力','すかいらーくHD','大日本印刷','ヤマハ発動機','東急電鉄','横浜DeNAベイスターズ','ルイ・ヴィトン・ジャパン',
+      '刀','コーエーテクモHD','ワコール','オリックス','塩野義製薬','シマノ','ミツカン','中部電力','ディスコ','星野リゾート',
+      '湖池屋','ANYCOLOR','NTTコミュニケーションズ','日本通運','経済産業省','理化学研究所','中国銀行（中銀）','帝国ホテル','リコー','西日本鉄道',
+      '住友不動産','テレビ東京','リクシル（LIXIL）','小田急電鉄','毎日放送（MBS）','伊那食品工業','コマツ','ヒューリック','ネスレ日本','積水化学工業',
+      '福岡ソフトバンクホークス','日清製粉','バンダイナムコフィルムワークス','霧島酒造','カネカ','LDH','松竹','七十七銀行','ByteDance','サンフレッチェ広島',
+      // 251-300
+      'NVIDIA','ヤマト運輸','高島屋','アビームコンサルティング','三越伊勢丹HD','ENEOS','キオクシア','京成電鉄','小野薬品工業','サミー',
+      'ライオン','東京都交通局','日本生活協同組合連合会（生協）','三浦工業','JFEホールディングス','ゼンリン','出光興産','中国電力','三菱UFJフィナンシャル・グループ','インテル',
+      '徳洲会','ドン・キホーテ','名古屋鉄道（名鉄）','商船三井','損害保険ジャパン','サンテレビジョン','国土交通省','財務省','JCB','伊藤商事',
+      'オリンパス','アスクル','クラレ','JICA','TSMC','ポケモン','ロート製薬','小学館','パソナ','学研ホールディングス',
+      '国立国会図書館','ニコン','沖縄電力','奥村組','四国電力','レーザーテック','スペースX','ユニセフ','日本食研ホールディングス','関西テレビ放送'
+    ];
+
+    // アーキタイプ定義
+    const archetypes = {
+      A1: { rank: 'A', k: 1.15 },
+      A2: { rank: 'A', k: 1.15 },
+      A3: { rank: 'B', k: 1.10 },
+      A4: { rank: 'C', k: 1.00 },
+      A5: { rank: 'C', k: 1.00 },
+      A6: { rank: 'C', k: 1.05 },
+      A7: { rank: 'B', k: 1.10 },
+      A8: { rank: 'B', k: 1.05 },
+    };
+
+    // 企業→アーキタイプ割当（全300社）
+    const companyToArch = {
+      // 1-50
+      'トヨタ自動車':'A3','グーグル':'A1','ソニー':'A1','楽天グループ':'A8','キーエンス':'A3','任天堂':'A6','パナソニック':'A3','アマゾンジャパン':'A1','Apple Japan':'A1','伊藤忠商事':'A2',
+      '三菱商事':'A2','ソフトバンク':'A8','本田技研工業（Honda）':'A3','味の素':'A4','全日本空輸（ANA）':'A5','サントリーホールディングス':'A4','東日本電信電話（NTT東日本）':'A5','ファーストリテイリング':'A4','西日本電信電話（NTT西日本）':'A5','日本航空（JAL）':'A5',
+      '日本マイクロソフト':'A1','リクルートホールディングス':'A8','LINEヤフー':'A8','オリエンタルランド':'A6','東日本旅客鉄道（JR東日本）':'A5','三井物産':'A2','資生堂':'A4','明治':'A4','イオン':'A4','アクセンチュア':'A2',
+      '東海旅客鉄道（JR東海）':'A5','カゴメ':'A4','日立製作所':'A3','NTTドコモ':'A3','花王':'A4','NTTデータ':'A8','日本電気（NEC）':'A3','電通':'A6','富士通':'A3','東京海上日動火災保険':'A2',
+      'バンダイナムコホールディングス':'A6','デンソー':'A3','三井不動産':'A4','バンダイ':'A6','KDDI':'A3','未来工業':'A3','JTB':'A6','フジテレビジョン':'A6','武田薬品工業':'A7','日本たばこ産業（JT）':'A4',
+      // 51-100
+      '丸紅':'A2','JR西日本':'A5','ニトリ':'A4','東芝':'A3','NRI（野村総合研究所）':'A2','ZOZO':'A8','富士フイルム':'A7','良品計画':'A4','IBM Japan':'A1','キヤノン':'A3',
+      'カルビー':'A4','三菱UFJ銀行':'A2','東京エレクトロン':'A1','村田製作所':'A3','日本中央競馬会（JRA）':'A5','AGC':'A3','サイバーエージェント':'A8','日産自動車':'A3','オムロン':'A3','旭化成':'A7',
+      '三菱地所':'A4','スターバックス コーヒー ジャパン':'A4','三菱電機':'A3','日本コカ・コーラ':'A4','キリンホールディングス':'A4','TOTO':'A3','タニタ':'A4','DeNA':'A8','積水ハウス':'A4','ゴールドマン・サックス':'A2',
+      'アステラス製薬':'A7','集英社':'A6','日本郵船':'A5','日本テレビ（NTV）':'A6','みずほ銀行':'A2','クボタ':'A3','住友商事':'A2','サンリオ':'A6','三菱重工':'A3','第一三共':'A7',
+      '日本銀行':'A2','三井住友銀行':'A2','スクウェア・エニックス':'A6','サイボウズ':'A8','清水建設':'A5','アサヒビール':'A4','シャープ':'A3','博報堂':'A6','マツダ':'A3','鹿島建設':'A5',
+      // 101-150
+      'しまむら':'A4','セガサミーHD':'A6','NHK':'A5','日本製鉄':'A3','キユーピー':'A4','大林組':'A5','江崎グリコ':'A4','ローソン':'A4','大成建設':'A5','京セラ':'A3',
+      'テスラ':'A1','ウォルト・ディズニー・ジャパン':'A6','OpenAI':'A1','大和ハウス工業':'A4','ヤクルト本社':'A4','東京都庁':'A5','ヤマハ':'A3','ブルボン':'A4','スズキ':'A3','Meta':'A1',
+      '竹中工務店':'A5','メルカリ':'A8','アイシン':'A3','SUBARU':'A3','キッコーマン':'A4','マッキンゼー':'A2','ファナック':'A3','東レ':'A3','中外製薬':'A7','九州電力':'A5',
+      '講談社':'A6','野村證券':'A2','タカラトミー':'A6','ベネッセコーポレーション':'A6','信越化学':'A3','日清食品':'A4','ロッテ':'A4','セイコーエプソン':'A3','阪神タイガース':'A6','不二家':'A4',
+      'ダイキン工業':'A3','コナミグループ':'A6','日本マクドナルド':'A4','アイリスオーヤマ':'A4','日本生命保険':'A2','コクヨ':'A4','日本赤十字社':'A5','JR九州':'A5','ニデック':'A3','デロイトトーマツコンサルティング':'A2',
+      // 151-200
+      '森永製菓':'A4','セブン-イレブン・ジャパン':'A4','日本郵便':'A5','JAXA':'A5','SCSK':'A8','コーセー':'A4','P&Gジャパン':'A4','キリンビール':'A4','山崎製パン':'A4','川崎重工':'A3',
+      'TOPPAN':'A3','Sky（スカイ）':'A8','日本ガイシ':'A3','IHI':'A3','ファンケル':'A4','伊藤園':'A4','阪急電鉄':'A5','大塚製薬':'A7','サッポロビール':'A4','吉本興業HD':'A6',
+      '住友林業':'A4','タミヤ':'A6','森ビル':'A4','三菱ケミカル':'A7','コストコ':'A4','TBS':'A6','ジャパネットたかた':'A6','読売ジャイアンツ':'A6','佐川急便':'A5','東京メトロ':'A5',
+      'ユニバーサルミュージック':'A6','東宝':'A6','第一生命':'A2','マツモトキヨシ':'A4','東北電力':'A5','島津製作所':'A7','ダイハツ工業':'A3','モンベル':'A6','エーザイ':'A7','HIS':'A6',
+      'Alphabet':'A1','Nike Japan':'A4','ファミリーマート':'A4','PwC':'A2','BCG':'A2','テレビ朝日':'A6','レゴジャパン':'A6','日本オラクル':'A1','北海道電力':'A5','関西電力':'A5',
+      // 201-250
+      'マイナビ':'A8','MIXI':'A8','大創産業（ダイソー）':'A4','東京電力':'A5','すかいらーくHD':'A4','大日本印刷':'A3','ヤマハ発動機':'A3','東急電鉄':'A5','横浜DeNAベイスターズ':'A6','ルイ・ヴィトン・ジャパン':'A4',
+      '刀':'A6','コーエーテクモHD':'A6','ワコール':'A4','オリックス':'A2','塩野義製薬':'A7','シマノ':'A3','ミツカン':'A4','中部電力':'A5','ディスコ':'A3','星野リゾート':'A6',
+      '湖池屋':'A4','ANYCOLOR':'A6','NTTコミュニケーションズ':'A3','日本通運':'A5','経済産業省':'A5','理化学研究所':'A5','中国銀行（中銀）':'A2','帝国ホテル':'A6','リコー':'A3','西日本鉄道':'A5',
+      '住友不動産':'A4','テレビ東京':'A6','リクシル（LIXIL）':'A3','小田急電鉄':'A5','毎日放送（MBS）':'A6','伊那食品工業':'A4','コマツ':'A3','ヒューリック':'A4','ネスレ日本':'A4','積水化学工業':'A3',
+      '福岡ソフトバンクホークス':'A6','日清製粉':'A4','バンダイナムコフィルムワークス':'A6','霧島酒造':'A4','カネカ':'A3','LDH':'A6','松竹':'A6','七十七銀行':'A2','ByteDance':'A1','サンフレッチェ広島':'A6',
+      // 251-300
+      'NVIDIA':'A1','ヤマト運輸':'A5','高島屋':'A4','アビームコンサルティング':'A2','三越伊勢丹HD':'A4','ENEOS':'A5','キオクシア':'A1','京成電鉄':'A5','小野薬品工業':'A7','サミー':'A6',
+      'ライオン':'A4','東京都交通局':'A5','日本生活協同組合連合会（生協）':'A5','三浦工業':'A3','JFEホールディングス':'A3','ゼンリン':'A6','出光興産':'A5','中国電力':'A5','三菱UFJフィナンシャル・グループ':'A2','インテル':'A1',
+      '徳洲会':'A7','ドン・キホーテ':'A4','名古屋鉄道（名鉄）':'A5','商船三井':'A5','損害保険ジャパン':'A2','サンテレビジョン':'A6','国土交通省':'A5','財務省':'A5','JCB':'A2','伊藤商事':'A2',
+      'オリンパス':'A3','アスクル':'A4','クラレ':'A3','JICA':'A5','TSMC':'A1','ポケモン':'A6','ロート製薬':'A7','小学館':'A6','パソナ':'A6','学研ホールディングス':'A6',
+      '国立国会図書館':'A5','ニコン':'A3','沖縄電力':'A5','奥村組':'A5','四国電力':'A5','レーザーテック':'A1','スペースX':'A1','ユニセフ':'A5','日本食研ホールディングス':'A4','関西テレビ放送':'A6'
+    };
+
+    const rankToNeeded = { A:80, B:70, C:60, D:50, E:40, F:30 };
+
+    function sigmoid(x){ return 1/(1+Math.exp(-x)); }
+
+    function computeProb(marketValue, archKey, name){
+      const arch = archetypes[archKey] || archetypes.A4;
+      const needed = rankToNeeded[arch.rank] || 60;
+      const gap = marketValue - needed * arch.k;
+      const seed = (name.charCodeAt(0) + name.length * 17) % 17;
+      const bias = (seed - 8) * 0.12;
+      const base = 10 + 20 * sigmoid((gap + bias*3.5) / 2.8);
+      const micro = bias * 2.5;
+      const bonus = gap > 10 ? Math.min(30, ((gap - 10) / 2.5) * (1 + bias * 0.3)) : 0;
+      const prob = Math.min(60, Math.max(10, base + micro + bonus));
+      return prob;
+    }
+
+    function colorByProb(p) {
+      if (p >= 40) return ['#3b82f6', '合格率超高']; // 青
+      if (p >= 25) return ['#22c55e', '合格率高']; // 緑
+      if (p >= 15) return ['#f97316', '合格率中']; // オレンジ
+      return ['#eab308', '可能性あり']; // 黄色
+    }
+
+    function renderRadar(axes){
+      const labels = ['職務経験','役職','スキル','マインド','人物'];
+      const maxByAxis = [40,20,15,15,10];
+      const svgSize = 360;
+      const cx = svgSize/2, cy = svgSize/2, r = 140;
+      const ratios = axes.map((v,i)=> Math.max(0, Math.min(1, v / (maxByAxis[i]||20))));
+      const points = ratios.map((ratio,i)=>{
+        const angle = -Math.PI/2 + (2*Math.PI*i/ratios.length);
+        const rr = ratio*r;
+        const x = cx + rr*Math.cos(angle);
+        const y = cy + rr*Math.sin(angle);
+        return `${x},${y}`;
+      }).join(' ');
+      const grid = [0.2,0.4,0.6,0.8,1].map(f=>{
+        const pts = ratios.map((_,i)=>{
+          const angle = -Math.PI/2 + (2*Math.PI*i/ratios.length);
+          const rr = f*r;
+          const x = cx + rr*Math.cos(angle);
+          const y = cy + rr*Math.sin(angle);
+          return `${x},${y}`;
+        }).join(' ');
+        return `<polygon points="${pts}" fill="none" stroke="#e9e5dd" stroke-width="1"/>`;
+      }).join('');
+      const labelNodes = labels.map((txt,i)=>{
+        const angle = -Math.PI/2 + (2*Math.PI*i/ratios.length);
+        const rr = r+26;
+        const x = cx + rr*Math.cos(angle);
+        const y = cy + rr*Math.sin(angle);
+        return `<text class="radar-label" x="${x}" y="${y}" fill="#6b7280" font-size="12" text-anchor="middle" dominant-baseline="middle">${txt}</text>`;
+      }).join('');
+      const poly = `<polygon class="radar-poly" points="${points}" fill="rgba(255,107,3,0.18)" stroke="#ff6b03" stroke-width="2"/>`;
+      return `<svg width="100%" height="100%" viewBox="0 0 ${svgSize} ${svgSize}" preserveAspectRatio="xMidYMid meet" aria-label="radar" style="max-width:${svgSize}px; height:auto;">${grid}${poly}${labelNodes}</svg>`;
+    }
+
+    function renderResults(list) {
+      const resultList = document.getElementById('result-list');
+      resultList.innerHTML = list.map((c, i) => {
+        const [color, label] = colorByProb(c.prob);
+        // メーターは0-60%を0-100%幅に換算
+        const pct = Math.min(c.prob / 60 * 100, 100);
+        return `
+          <div class="meter">
+            <div>
+              <div style="font-weight:700;">${i + 1}. ${c.name}</div>
+              <div class="meter-bar">
+                <div class="meter-fill" style="width:${pct}%; background: linear-gradient(90deg, ${color}, ${color}88);"></div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:800; font-size:16px;">${c.prob.toFixed(1)}%</div>
+              <div class="tag" style="color:${color}; border-color:${color}55;">${label}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // localStorageから結果を取得
+    const stored = localStorage.getItem('diagnosticResults');
+    if (!stored) {
+      document.body.innerHTML = '<div class="shell"><div class="panel"><p>診断結果が見つかりません。診断ページから開始してください。</p><a href="career-probability.html" class="btn btn-primary">診断を開始する</a></div></div>';
+    } else {
+      const { scores, results } = JSON.parse(stored);
+      document.getElementById('radar-area').innerHTML = `
+        <div class="question-card">
+          <div class="question-title">あなたの市場価値スコア</div>
+          <div style="display:flex; justify-content:center; padding:8px 0;">${renderRadar(scores.axes)}</div>
+          <div style="margin-top:8px; color:#6b7280; font-size:13px;">総合スコア: ${Math.max(50, scores.total).toFixed(1)} / 100</div>
+        </div>
+      `;
+      renderResults(results);
+    }
+  </script>
+</body>
+</html>
