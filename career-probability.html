@@ -395,7 +395,15 @@
       // 業種一致時の11.3%加点
       const companyIndustry = companyToIndustry[name];
       const industryBonus = (userIndustry && companyIndustry && userIndustry === companyIndustry) ? 11.3 : 0;
-      const prob = Math.min(60, Math.max(10, base + micro + bonus + industryBonus)); // 10〜60%
+      let prob = base + micro + bonus + industryBonus;
+      
+      // 10%ちょうどの場合は9.5%〜10.5%の範囲で完全ランダムに抽選
+      if (Math.abs(prob - 10) < 0.01) { // 10%に近い場合（誤差0.01%以内）
+        prob = 9.5 + Math.random() * 1.0; // 9.5〜10.5の範囲でランダム
+      } else {
+        prob = Math.min(60, Math.max(10, prob)); // 10〜60%の範囲に制限
+      }
+      
       return prob;
     }
 

@@ -42,7 +42,81 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow-soft);
     }
-    .hero h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: 0.01em; }
+    .hero h1 { margin: 0; font-size: 24px; letter-spacing: 0.01em; }
+    .speech-bubble-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      opacity: 0;
+      animation: fadeIn 0.6s ease-out 0.3s forwards;
+    }
+    .character-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: characterFadeIn 0.6s ease-out 0.3s forwards;
+    }
+    @keyframes characterFadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .speech-bubble {
+      position: relative;
+      background: #fffaf5;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 35px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      flex: 1;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(-10px);
+      animation: bubbleFadeIn 0.6s ease-out 0.4s forwards;
+      line-height: 1.2;
+      text-align: center;
+      overflow: hidden;
+      word-break: keep-all;
+      min-width: 0;
+    }
+    @keyframes bubbleFadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* 吹き出しのしっぽ（PC・タブレット） */
+    .speech-bubble::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 8px solid var(--border);
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 8px solid #fffaf5;
+    }
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -84,6 +158,52 @@
     .radar-label { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
     @keyframes radarGrow { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .meter { opacity: 0; transform: translateX(-20px); transition: opacity 0.4s ease-out, transform 0.4s ease-out; }
+    .meter.visible { opacity: 1; transform: translateX(0); }
+    .top10-card {
+      display: inline-block;
+      width: calc(20% - 8px);
+      min-width: 120px;
+      padding: 12px;
+      margin: 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fffaf5;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .top10-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
+    }
+    .filter-panel {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fffaf5;
+    }
+    .filter-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    @media (max-width: 640px) {
+      .top10-card { flex: 1 1 100%; min-width: 100px; }
+    }
     .btn {
       border: none;
       border-radius: 12px;
@@ -100,6 +220,17 @@
       box-shadow: 0 10px 24px rgba(255,107,3,0.26);
     }
     .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    @media (max-width: 1080px) and (min-width: 641px) {
+      .character-img {
+        width: 100px;
+        height: 100px;
+      }
+      .speech-bubble {
+        height: 100px;
+        font-size: 36px;
+        padding: 4px 8px;
+      }
+    }
     @media (max-width: 640px) {
       body { padding: 16px; }
       .hero { padding: 18px; }
@@ -107,18 +238,62 @@
       .meter div { font-size: 14px; }
       .meter .tag { font-size: 11px; }
       .result-list { max-height: 400px; }
+      .speech-bubble-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .character-img {
+        width: 80px;
+        height: 80px;
+      }
+      .speech-bubble {
+        height: 80px;
+        font-size: 28px;
+        width: 100%;
+        padding: 4px 8px;
+      }
+      /* スマホ版: しっぽが上向き */
+      .speech-bubble::before {
+        left: 50%;
+        top: -8px;
+        transform: translateX(-50%);
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid var(--border);
+        border-top: none;
+        border-right: none;
+      }
+      .speech-bubble::after {
+        left: 50%;
+        top: -7px;
+        transform: translateX(-50%);
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid #fffaf5;
+        border-top: none;
+        border-right: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="shell">
     <div class="hero">
-      <h1>診断結果</h1>
-      <p class="muted">あなたの市場価値と300社の合格可能性</p>
+      <h1>転職市場価値診断の結果</h1>
+    </div>
+    <div class="hero">
+      <div class="speech-bubble-container">
+        <img src="images/character.png" alt="キャラクター" class="character-img">
+        <div class="speech-bubble">
+          あなたの市場価値での合格率はこちらです！
+        </div>
+      </div>
     </div>
 
     <div class="panel">
       <div id="radar-area"></div>
+      <div id="top3-area" style="margin-top: 24px;"></div>
+      <div id="filter-area" style="margin-top: 24px;"></div>
       <div style="margin-top: 24px;">
         <h3 style="margin:0 0 12px;">合格可能性メーター（300社）</h3>
         <div class="result-list" id="result-list"></div>
@@ -224,6 +399,41 @@
 
     const rankToNeeded = { A:80, B:70, C:60, D:50, E:40, F:30 };
 
+    // 企業→業種マッピング
+    const companyToIndustry = {
+      // IT・通信
+      'グーグル':'IT・通信','ソニー':'IT・通信','楽天グループ':'IT・通信','LINEヤフー':'IT・通信','日本マイクロソフト':'IT・通信','NTTドコモ':'IT・通信','NTTデータ':'IT・通信','KDDI':'IT・通信','サイバーエージェント':'IT・通信','DeNA':'IT・通信','ZOZO':'IT・通信','サイボウズ':'IT・通信','メルカリ':'IT・通信','SCSK':'IT・通信','Sky（スカイ）':'IT・通信','マイナビ':'IT・通信','MIXI':'IT・通信','NTTコミュニケーションズ':'IT・通信','テスラ':'IT・通信','OpenAI':'IT・通信','Meta':'IT・通信','Alphabet':'IT・通信','日本オラクル':'IT・通信','ByteDance':'IT・通信','NVIDIA':'IT・通信','キオクシア':'IT・通信','インテル':'IT・通信','TSMC':'IT・通信','レーザーテック':'IT・通信','スペースX':'IT・通信','東日本電信電話（NTT東日本）':'IT・通信','西日本電信電話（NTT西日本）':'IT・通信','IBM Japan':'IT・通信','Apple Japan':'IT・通信','アマゾンジャパン':'IT・通信','ソフトバンク':'IT・通信',
+      // 製造業・自動車
+      'トヨタ自動車':'製造業・自動車','本田技研工業（Honda）':'製造業・自動車','日産自動車':'製造業・自動車','マツダ':'製造業・自動車','スズキ':'製造業・自動車','SUBARU':'製造業・自動車','ダイハツ工業':'製造業・自動車','キーエンス':'製造業・自動車','パナソニック':'製造業・自動車','日立製作所':'製造業・自動車','日本電気（NEC）':'製造業・自動車','富士通':'製造業・自動車','東芝':'製造業・自動車','キヤノン':'製造業・自動車','村田製作所':'製造業・自動車','東京エレクトロン':'製造業・自動車','オムロン':'製造業・自動車','三菱電機':'製造業・自動車','シャープ':'製造業・自動車','セイコーエプソン':'製造業・自動車','京セラ':'製造業・自動車','ファナック':'製造業・自動車','アイシン':'製造業・自動車','ヤマハ':'製造業・自動車','ヤマハ発動機':'製造業・自動車','川崎重工':'製造業・自動車','IHI':'製造業・自動車','コマツ':'製造業・自動車','リコー':'製造業・自動車','JFEホールディングス':'製造業・自動車','三浦工業':'製造業・自動車','デンソー':'製造業・自動車','日本製鉄':'製造業・自動車','日本ガイシ':'製造業・自動車','島津製作所':'製造業・自動車','ディスコ':'製造業・自動車','ニデック':'製造業・自動車','オリンパス':'製造業・自動車','ニコン':'製造業・自動車','クラレ':'製造業・自動車','AGC':'製造業・自動車','クボタ':'製造業・自動車','未来工業':'製造業・自動車','バンダイ':'製造業・自動車','タカラトミー':'製造業・自動車','タミヤ':'製造業・自動車','シマノ':'製造業・自動車','積水化学工業':'製造業・自動車','カネカ':'製造業・自動車','TOPPAN':'製造業・自動車','大日本印刷':'製造業・自動車','三菱重工':'製造業・自動車','ダイキン工業':'製造業・自動車','TOTO':'製造業・自動車','日本たばこ産業（JT）':'製造業・自動車',
+      // 金融・保険
+      '三菱UFJ銀行':'金融・保険','みずほ銀行':'金融・保険','三井住友銀行':'金融・保険','日本銀行':'金融・保険','野村證券':'金融・保険','ゴールドマン・サックス':'金融・保険','第一生命':'金融・保険','日本生命保険':'金融・保険','損害保険ジャパン':'金融・保険','オリックス':'金融・保険','三菱UFJフィナンシャル・グループ':'金融・保険','JCB':'金融・保険','七十七銀行':'金融・保険','中国銀行（中銀）':'金融・保険','東京海上日動火災保険':'金融・保険',
+      // 商社・流通
+      '伊藤忠商事':'商社・流通','三菱商事':'商社・流通','三井物産':'商社・流通','丸紅':'商社・流通','住友商事':'商社・流通','日本郵船':'商社・流通','商船三井':'商社・流通','日本通運':'商社・流通','ヤマト運輸':'商社・流通','佐川急便':'商社・流通','伊藤商事':'商社・流通','日本中央競馬会（JRA）':'商社・流通','日本生活協同組合連合会（生協）':'商社・流通',
+      // 食品・飲料
+      '味の素':'食品・飲料','サントリーホールディングス':'食品・飲料','カゴメ':'食品・飲料','カルビー':'食品・飲料','日本コカ・コーラ':'食品・飲料','キリンホールディングス':'食品・飲料','アサヒビール':'食品・飲料','キユーピー':'食品・飲料','江崎グリコ':'食品・飲料','キッコーマン':'食品・飲料','日清食品':'食品・飲料','ロッテ':'食品・飲料','不二家':'食品・飲料','森永製菓':'食品・飲料','キリンビール':'食品・飲料','山崎製パン':'食品・飲料','サッポロビール':'食品・飲料','ブルボン':'食品・飲料','伊藤園':'食品・飲料','ミツカン':'食品・飲料','湖池屋':'食品・飲料','日清製粉':'食品・飲料','霧島酒造':'食品・飲料','ライオン':'食品・飲料','明治':'食品・飲料','ヤクルト本社':'食品・飲料','伊那食品工業':'食品・飲料','ネスレ日本':'食品・飲料','日本食研ホールディングス':'食品・飲料',
+      // 建設・不動産
+      '三井不動産':'建設・不動産','三菱地所':'建設・不動産','清水建設':'建設・不動産','鹿島建設':'建設・不動産','大林組':'建設・不動産','大成建設':'建設・不動産','竹中工務店':'建設・不動産','大和ハウス工業':'建設・不動産','積水ハウス':'建設・不動産','住友林業':'建設・不動産','森ビル':'建設・不動産','住友不動産':'建設・不動産','ヒューリック':'建設・不動産','奥村組':'建設・不動産',
+      // メディア・エンターテインメント
+      '任天堂':'メディア・エンターテインメント','オリエンタルランド':'メディア・エンターテインメント','バンダイナムコホールディングス':'メディア・エンターテインメント','電通':'メディア・エンターテインメント','JTB':'メディア・エンターテインメント','フジテレビジョン':'メディア・エンターテインメント','集英社':'メディア・エンターテインメント','日本テレビ（NTV）':'メディア・エンターテインメント','サンリオ':'メディア・エンターテインメント','スクウェア・エニックス':'メディア・エンターテインメント','セガサミーHD':'メディア・エンターテインメント','ウォルト・ディズニー・ジャパン':'メディア・エンターテインメント','講談社':'メディア・エンターテインメント','タカラトミー':'メディア・エンターテインメント','ベネッセコーポレーション':'メディア・エンターテインメント','阪神タイガース':'メディア・エンターテインメント','コナミグループ':'メディア・エンターテインメント','吉本興業HD':'メディア・エンターテインメント','TBS':'メディア・エンターテインメント','ジャパネットたかた':'メディア・エンターテインメント','読売ジャイアンツ':'メディア・エンターテインメント','ユニバーサルミュージック':'メディア・エンターテインメント','東宝':'メディア・エンターテインメント','モンベル':'メディア・エンターテインメント','HIS':'メディア・エンターテインメント','テレビ朝日':'メディア・エンターテインメント','レゴジャパン':'メディア・エンターテインメント','横浜DeNAベイスターズ':'メディア・エンターテインメント','刀':'メディア・エンターテインメント','コーエーテクモHD':'メディア・エンターテインメント','ANYCOLOR':'メディア・エンターテインメント','帝国ホテル':'メディア・エンターテインメント','テレビ東京':'メディア・エンターテインメント','毎日放送（MBS）':'メディア・エンターテインメント','福岡ソフトバンクホークス':'メディア・エンターテインメント','バンダイナムコフィルムワークス':'メディア・エンターテインメント','LDH':'メディア・エンターテインメント','松竹':'メディア・エンターテインメント','サンフレッチェ広島':'メディア・エンターテインメント','ポケモン':'メディア・エンターテインメント','サミー':'メディア・エンターテインメント','ゼンリン':'メディア・エンターテインメント','サンテレビジョン':'メディア・エンターテインメント','関西テレビ放送':'メディア・エンターテインメント','博報堂':'メディア・エンターテインメント','NHK':'メディア・エンターテインメント','小学館':'メディア・エンターテインメント','学研ホールディングス':'メディア・エンターテインメント',
+      // 医薬品・化学
+      '武田薬品工業':'医薬品・化学','富士フイルム':'医薬品・化学','旭化成':'医薬品・化学','アステラス製薬':'医薬品・化学','第一三共':'医薬品・化学','中外製薬':'医薬品・化学','三菱ケミカル':'医薬品・化学','エーザイ':'医薬品・化学','塩野義製薬':'医薬品・化学','小野薬品工業':'医薬品・化学','徳洲会':'医薬品・化学','ロート製薬':'医薬品・化学','信越化学':'医薬品・化学','東レ':'医薬品・化学',
+      // サービス・コンサル
+      'アクセンチュア':'サービス・コンサル','NRI（野村総合研究所）':'サービス・コンサル','マッキンゼー':'サービス・コンサル','デロイトトーマツコンサルティング':'サービス・コンサル','PwC':'サービス・コンサル','BCG':'サービス・コンサル','アビームコンサルティング':'サービス・コンサル','リクルートホールディングス':'サービス・コンサル','パソナ':'サービス・コンサル','星野リゾート':'サービス・コンサル',
+      // 小売・流通
+      'ファーストリテイリング':'小売・流通','イオン':'小売・流通','ニトリ':'小売・流通','良品計画':'小売・流通','しまむら':'小売・流通','ローソン':'小売・流通','セブン-イレブン・ジャパン':'小売・流通','ファミリーマート':'小売・流通','日本マクドナルド':'小売・流通','コストコ':'小売・流通','マツモトキヨシ':'小売・流通','ドン・キホーテ':'小売・流通','大創産業（ダイソー）':'小売・流通','すかいらーくHD':'小売・流通','高島屋':'小売・流通','三越伊勢丹HD':'小売・流通','ルイ・ヴィトン・ジャパン':'小売・流通','アスクル':'小売・流通','スターバックス コーヒー ジャパン':'小売・流通','Nike Japan':'小売・流通',
+      // 運輸・物流
+      '全日本空輸（ANA）':'運輸・物流','日本航空（JAL）':'運輸・物流','東日本旅客鉄道（JR東日本）':'運輸・物流','東海旅客鉄道（JR東海）':'運輸・物流','JR西日本':'運輸・物流','JR九州':'運輸・物流','東京メトロ':'運輸・物流','東急電鉄':'運輸・物流','小田急電鉄':'運輸・物流','京成電鉄':'運輸・物流','西日本鉄道':'運輸・物流','名古屋鉄道（名鉄）':'運輸・物流','阪急電鉄':'運輸・物流','東京都交通局':'運輸・物流','日本郵便':'運輸・物流',
+      // エネルギー
+      '九州電力':'エネルギー','東北電力':'エネルギー','北海道電力':'エネルギー','関西電力':'エネルギー','東京電力':'エネルギー','中部電力':'エネルギー','沖縄電力':'エネルギー','四国電力':'エネルギー','中国電力':'エネルギー','ENEOS':'エネルギー','出光興産':'エネルギー',
+      // 化粧品・日用品
+      '資生堂':'化粧品・日用品','花王':'化粧品・日用品','コーセー':'化粧品・日用品','P&Gジャパン':'化粧品・日用品','ファンケル':'化粧品・日用品','タニタ':'化粧品・日用品','コクヨ':'化粧品・日用品','ワコール':'化粧品・日用品','リクシル（LIXIL）':'化粧品・日用品','アイリスオーヤマ':'化粧品・日用品',
+      // 公的機関
+      '東京都庁':'公的機関','日本赤十字社':'公的機関','JAXA':'公的機関','経済産業省':'公的機関','理化学研究所':'公的機関','国土交通省':'公的機関','財務省':'公的機関','JICA':'公的機関','国立国会図書館':'公的機関','ユニセフ':'公的機関',
+    };
+
+    // 業種リスト
+    const industries = ['IT・通信', '製造業・自動車', '金融・保険', '商社・流通', '食品・飲料', '建設・不動産', 'メディア・エンターテインメント', '医薬品・化学', 'サービス・コンサル', '小売・流通', '運輸・物流', 'エネルギー', '化粧品・日用品', '公的機関', 'その他'];
+
     function sigmoid(x){ return 1/(1+Math.exp(-x)); }
 
     function computeProb(marketValue, archKey, name){
@@ -280,27 +490,113 @@
       return `<svg width="100%" height="100%" viewBox="0 0 ${svgSize} ${svgSize}" preserveAspectRatio="xMidYMid meet" aria-label="radar" style="max-width:${svgSize}px; height:auto;">${grid}${poly}${labelNodes}</svg>`;
     }
 
-    function renderResults(list) {
-      const resultList = document.getElementById('result-list');
-      resultList.innerHTML = list.map((c, i) => {
-        const [color, label] = colorByProb(c.prob);
-        // メーターは0-60%を0-100%幅に換算
+    // トップ3企業をレンダリング
+    function renderTop3(results) {
+      const top3Area = document.getElementById('top3-area');
+      const top3 = results.slice(0, 3);
+      
+      const top3Cards = top3.map((c, i) => {
+        const [color] = colorByProb(c.prob);
         const pct = Math.min(c.prob / 60 * 100, 100);
         return `
-          <div class="meter">
-            <div>
-              <div style="font-weight:700;">${i + 1}. ${c.name}</div>
-              <div class="meter-bar">
-                <div class="meter-fill" style="width:${pct}%; background: linear-gradient(90deg, ${color}, ${color}88);"></div>
-              </div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-weight:800; font-size:16px;">${c.prob.toFixed(1)}%</div>
-              <div class="tag" style="color:${color}; border-color:${color}55;">${label}</div>
+          <div class="top10-card" style="flex:1; min-width:200px;">
+            <div style="font-size:12px; color:var(--muted); margin-bottom:4px;">${i + 1}位</div>
+            <div style="font-weight:700; font-size:16px; margin-bottom:8px;">${c.name}</div>
+            <div style="font-weight:800; font-size:24px; color:${color}; margin-bottom:8px;">合格率 ${c.prob.toFixed(1)}%</div>
+            <div class="meter-bar" style="height:8px; margin-bottom:6px;">
+              <div class="meter-fill" style="width:${pct}%; background: linear-gradient(90deg, ${color}, ${color}88);"></div>
             </div>
           </div>
         `;
       }).join('');
+      
+      top3Area.innerHTML = `
+        <h3 style="margin:0 0 16px; font-size:16px;">トップ3企業</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          ${top3Cards}
+        </div>
+      `;
+    }
+
+    // フィルター機能をレンダリング
+    function renderFilter() {
+      const filterArea = document.getElementById('filter-area');
+      const options = '<option value="">すべての業種</option>' + industries.map(industry => `
+        <option value="${industry}">${industry}</option>
+      `).join('');
+      
+      filterArea.innerHTML = `
+        <div class="filter-panel">
+          <h3 style="margin:0 0 12px; font-size:16px;">業種で絞り込み</h3>
+          <select class="filter-select" id="industry-filter" onchange="applyFilter()">
+            ${options}
+          </select>
+        </div>
+      `;
+    }
+
+    // フィルター適用（グローバルスコープに配置）
+    window.applyFilter = function() {
+      const selected = document.getElementById('industry-filter')?.value || '';
+      const allResults = JSON.parse(localStorage.getItem('diagnosticResults')).results;
+      
+      if (!selected) {
+        // すべての業種を表示
+        renderResults(allResults);
+      } else {
+        // 選択された業種でフィルター
+        const filtered = allResults.filter(c => {
+          const industry = companyToIndustry[c.name] || 'その他';
+          return industry === selected;
+        });
+        // フィルター後の結果を再ソート
+        filtered.sort((a, b) => b.prob - a.prob || a.name.localeCompare(b.name));
+        renderResults(filtered);
+      }
+    };
+    
+
+    function renderResults(list) {
+      const resultList = document.getElementById('result-list');
+      resultList.innerHTML = '';
+      
+      list.forEach((c, i) => {
+        const [color, label] = colorByProb(c.prob);
+        const pct = Math.min(c.prob / 60 * 100, 100);
+        const meterEl = document.createElement('div');
+        meterEl.className = 'meter';
+        meterEl.innerHTML = `
+          <div>
+            <div style="font-weight:700;">${i + 1}. ${c.name}</div>
+            <div class="meter-bar">
+              <div class="meter-fill" style="width:${pct}%; background: linear-gradient(90deg, ${color}, ${color}88);"></div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800; font-size:16px;">${c.prob.toFixed(1)}%</div>
+            <div class="tag" style="color:${color}; border-color:${color}55;">${label}</div>
+          </div>
+        `;
+        resultList.appendChild(meterEl);
+      });
+      
+      // Intersection Observerでスクロール連動アニメーション
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+      
+      // 各メーターを監視対象に追加
+      resultList.querySelectorAll('.meter').forEach(meter => {
+        observer.observe(meter);
+      });
     }
 
     // localStorageから結果を取得
@@ -316,6 +612,14 @@
           <div style="margin-top:8px; color:#6b7280; font-size:13px;">総合スコア: ${Math.max(50, scores.total).toFixed(1)} / 100</div>
         </div>
       `;
+      
+      // トップ3企業を表示
+      renderTop3(results);
+      
+      // フィルター機能を表示
+      renderFilter();
+      
+      // 全企業リストを表示（順次アニメーション付き）
       renderResults(results);
     }
   </script>
