@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>16タイプ仕事診断</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #ff9800;
+            --color-primary-dark: #ef6c00;
+            --color-primary-light: #ffe0b2;
+            --color-background: #fffaf5;
+            --color-text: #1e293b;
+            --color-text-light: #64748b;
+            --color-white: #ffffff;
+            --color-border: #f0d7b2;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Screen Layout */
+        .screen {
+            display: none;
+            /* Hidden by default */
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Start Screen Styling */
+        #start-screen {
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .start-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(to right, #ff9800, #ef6c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #ff9800, #ef6c00);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            #start-screen,
+            #question-screen,
+            #result-screen {
+                width: 100%;
+            }
+            .start-card {
+                padding: 24px 16px;
+                border-radius: 18px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .btn-primary {
+                width: 100%;
+                padding: 14px 24px;
+                font-size: 1rem;
+            }
+            #question-screen {
+                padding: 16px;
+            }
+            .question-text {
+                font-size: 1.1rem;
+                margin-bottom: 24px;
+            }
+            .options-container {
+                gap: 8px;
+            }
+            .option-btn {
+                font-size: 0.95rem;
+                padding: 10px;
+            }
+            .hero-section {
+                padding: 28px 16px;
+            }
+            .type-image {
+                width: 60vw;
+                height: 60vw;
+                font-size: 3.5rem;
+            }
+            .result-title {
+                font-size: 1.6rem;
+            }
+            .result-content {
+                padding: 16px;
+                max-width: 100%;
+            }
+            .catchcopy {
+                font-size: 1.05rem;
+                margin: 20px 0;
+            }
+            .jobs-header-row {
+                align-items: flex-end;
+            }
+            .job-cards {
+                gap: 10px;
+            }
+            .job-card {
+                min-width: 200px;
+                max-width: 220px;
+            }
+            .job-illustration {
+                height: 90px;
+            }
+            .job-detail-body {
+                position: relative;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            .job-detail-body.expanded {
+                -webkit-line-clamp: unset;
+                max-height: none;
+            }
+            .more-toggle {
+                display: inline-block;
+            }
+            .job-detail-body:not(.expanded)::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 2.4em;
+                background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+                pointer-events: none;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .result-content {
+                max-width: 720px;
+            }
+            .swipe-hint {
+                display: none;
+            }
+        }
+
+        /* Question Screen Styling */
+        #question-screen {
+            align-items: center;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-nav {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: var(--color-text-light);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: #ffe7c2;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--color-primary);
+            width: 0%;
+            transition: width 0.3s ease-out;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 40px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .options-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #cbd5e1;
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--color-text);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--color-primary);
+            background-color: #fff4e3;
+            color: var(--color-primary-dark);
+        }
+
+        /* Result Screen Styling */
+        #result-screen {
+            background: white;
+            padding-bottom: 40px;
+        }
+
+        .hero-section {
+            background-color: #fff3e0;
+            padding: 40px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .type-image {
+            width: min(70vw, 280px);
+            height: min(70vw, 280px);
+            background-color: #ffe0b2;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 5rem;
+        }
+
+        .result-title {
+            font-size: 2rem;
+            font-weight: 900;
+            line-height: 1.3;
+            margin: 0;
+        }
+
+        .result-content {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .catchcopy {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #334155;
+            margin: 30px 0;
+            white-space: pre-line;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .description-box {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            line-height: 1.8;
+            color: #475569;
+            margin-bottom: 30px;
+            white-space: pre-line;
+            border: none;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        h3 {
+            border-bottom: 2px solid #ffe0b2;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            color: var(--color-primary-dark);
+            font-size: 1.1rem;
+        }
+
+        .strong-box {
+            border: 1px solid var(--color-border);
+            background: #fff8ef;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .checklist li {
+            position: relative;
+            padding-left: 32px;
+            margin: 8px 0;
+            color: #1f2937;
+        }
+        .checklist li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 1.4em;   /* 約140%で少し大きめのボックス */
+            height: 1.4em;
+            border: 2px solid var(--color-primary-dark);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .checklist li::after {
+            content: "✓";
+            position: absolute;
+            left: 3px;
+            top: 1px;
+            font-size: 1.1em; /* チェックマークを約110%に拡大 */
+            color: #22c55e;
+        }
+        .jobs-box {
+            padding: 0;
+            margin-bottom: 32px;
+        }
+        .jobs-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .swipe-hint {
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+            white-space: nowrap;
+        }
+        .job-cards {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            /* 先頭・末尾カードも中央にスナップしやすくするため左右に余白 */
+            padding: 6px 8% 10px;
+            scroll-snap-type: x mandatory;
+            /* スクロールバー非表示（ブラウザ別対応） */
+            scrollbar-width: none;          /* Firefox */
+            -ms-overflow-style: none;       /* IE/Edge 古い版 */
+        }
+        .job-cards::-webkit-scrollbar {
+            display: none;                  /* Chrome / Safari */
+        }
+        .job-card {
+            flex: 0 0 88%;
+            max-width: 320px;
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            scroll-snap-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            text-align: center; /* カルーセル内の文字を中央揃え */
+        }
+        .job-card.active {
+            border-color: var(--color-primary);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+            transform: translateY(-2px);
+        }
+        .job-illustration {
+            width: 100%;
+            height: 130px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--color-primary-dark);
+            border: 1px solid var(--color-border);
+        }
+        .job-title {
+            font-weight: 800;
+            color: var(--color-primary-dark);
+            margin: 4px 0 0;
+            font-size: 1rem;
+        }
+        .job-desc {
+            color: #475569;
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .job-detail {
+            margin-top: 16px;
+        }
+        .job-detail h4 {
+            margin: 8px 0 4px;
+            font-size: 0.95rem;
+            color: var(--color-primary-dark);
+        }
+        .job-detail-body {
+            margin: 0 0 8px;
+            font-size: 0.95rem;
+            color: #475569;
+            white-space: pre-line;
+            line-height: 1.7;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .more-toggle {
+            display: inline-block;
+            margin: 4px 0 12px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: var(--color-primary-dark);
+            font-size: 0.85rem;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .fade-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <div class="start-card">
+            <h1>16タイプ仕事診断</h1>
+            <p>
+                約32問の質問に答えると、<br>
+                あなたの“働き方タイプ”と<br>
+                向いている職種を診断します。
+            </p>
+            <button class="btn-primary" onclick="startQuiz()">診断をはじめる</button>
+        </div>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div id="question-screen" class="screen">
+        <div class="header-nav">
+            <span id="back-btn" style="cursor: pointer;" onclick="goBack()">&lt; 前に戻る</span>
+            <span id="question-counter">Q 1 / 32</span>
+        </div>
+
+        <div class="progress-bar-bg">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+
+        <div id="question-container" class="fade-in">
+            <div id="question-text" class="question-text">質問テキスト</div>
+            <div class="options-container">
+                <button class="option-btn" onclick="handleAnswer(2)">当てはまる</button>
+                <button class="option-btn" onclick="handleAnswer(1)">どちらかといえば当てはまる</button>
+                <button class="option-btn" onclick="handleAnswer(0)">どちらでもない</button>
+                <button class="option-btn" onclick="handleAnswer(-1)">どちらかといえば当てはまらない</button>
+                <button class="option-btn" onclick="handleAnswer(-2)">当てはまらない</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="screen">
+        <div class="hero-section">
+            <div class="type-image" id="result-image">🎨</div>
+            <div style="color: var(--color-primary); font-weight: bold; margin-bottom: 8px;">RESULT</div>
+            <h1 id="result-name" class="result-title">タイプ名</h1>
+        </div>
+
+        <div class="result-content">
+            <div id="result-catchcopy" class="catchcopy">キャッチコピー</div>
+
+            <div class="strong-box">
+                <h3 style="border:none; padding:0; margin:0 0 8px 0; color: var(--color-primary-dark);">強み</h3>
+                <ul id="result-strengths" class="checklist"></ul>
+            </div>
+
+            <div class="section">
+                <h3>性格の傾向</h3>
+                <div id="result-description" class="description-box">解説文</div>
+            </div>
+
+            <div class="section jobs-box">
+                <div class="jobs-header-row">
+                    <h3 style="margin-top:0; border-bottom:none; padding-bottom:0;">向いている職種</h3>
+                    <span class="swipe-hint">右にスワイプ →</span>
+                </div>
+                <div id="result-jobs" class="job-cards"></div>
+                <div id="job-detail" class="job-detail">
+                    <h4 id="job-detail-h1"></h4>
+                    <p id="job-detail-body1" class="job-detail-body"></p>
+                    <h4 id="job-detail-h2"></h4>
+                    <p id="job-detail-body2" class="job-detail-body"></p>
+                    <h4 id="job-detail-h3"></h4>
+                    <p id="job-detail-body3" class="job-detail-body"></p>
+                </div>
+            </div>
+
+            <button class="btn-primary" style="width:100%; border-radius:12px;" onclick="resetQuiz()">もう一度診断する</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const questions = [
+            { id: 1, text: "大人数でいるとき、エネルギーが湧いてくるほうだ。", axis: "E_I", direction: "pos" },
+            { id: 2, text: "初対面でも、緊張せずすぐに打ち解けられる。", axis: "E_I", direction: "pos" },
+            { id: 3, text: "休日には家より、外に出かけて誰かに会いたい。", axis: "E_I", direction: "pos" },
+            { id: 4, text: "聞き役より、自分から話題を提供するほうだ。", axis: "E_I", direction: "pos" },
+            { id: 5, text: "一人で思考整理する時間が絶対に必要だ。", axis: "E_I", direction: "neg" },
+            { id: 6, text: "大人数より、少人数で深く話すのが好きだ。", axis: "E_I", direction: "neg" },
+            { id: 7, text: "注目されるより、裏方で支えるほうが落ち着く。", axis: "E_I", direction: "neg" },
+            { id: 8, text: "考えがまとまるまでは、発言したくないほうだ。", axis: "E_I", direction: "neg" },
+            { id: 9, text: "抽象論より、具体的な事実やデータを重視する。", axis: "S_N", direction: "pos" },
+            { id: 10, text: "仕事では、過去の事例や実績を参考にしたい。", axis: "S_N", direction: "pos" },
+            { id: 11, text: "「現状」を捉え、目の前の課題に対処するのが得意だ。", axis: "S_N", direction: "pos" },
+            { id: 12, text: "手順やマニュアルが決まっているほうが動きやすい。", axis: "S_N", direction: "pos" },
+            { id: 13, text: "詳細より、全体の「ビジョン」にワクワクする。", axis: "S_N", direction: "neg" },
+            { id: 14, text: "物事の「裏にある意味」や「パターン」を読むのが好きだ。", axis: "S_N", direction: "neg" },
+            { id: 15, text: "前例のない新しい案を考えるのが好きだ。", axis: "S_N", direction: "neg" },
+            { id: 16, text: "方法が決まっていなくても、走りながら考えるほうだ。", axis: "S_N", direction: "neg" },
+            { id: 17, text: "感情より、論理的な整合性を優先する。", axis: "T_F", direction: "pos" },
+            { id: 18, text: "相手を傷つけてでも、「真実」をハッキリさせるべきだ。", axis: "T_F", direction: "pos" },
+            { id: 19, text: "トラブル時は、まず原因分析し冷静に対処する。", axis: "T_F", direction: "pos" },
+            { id: 20, text: "「公平さ」とは、誰にでも同じルールを適用することだ。", axis: "T_F", direction: "pos" },
+            { id: 21, text: "迷ったときは、自分の気持ちや相手の感情を大切にする。", axis: "T_F", direction: "neg" },
+            { id: 22, text: "議論に勝つより、全体の調和を保つほうが大事だ。", axis: "T_F", direction: "neg" },
+            { id: 23, text: "困っている人がいると、理屈抜きで手を差し伸べたくなる。", axis: "T_F", direction: "neg" },
+            { id: 24, text: "批判時は、相手がどう感じるかを一番に気にする。", axis: "T_F", direction: "neg" },
+            { id: 25, text: "旅行や仕事の予定は、事前にきっちり立てたい。", axis: "J_P", direction: "pos" },
+            { id: 26, text: "締め切りギリギリは嫌で、余裕を持って終わらせたい。", axis: "J_P", direction: "pos" },
+            { id: 27, text: "部屋やデスク周りは、整理整頓されていないと落ち着かない。", axis: "J_P", direction: "pos" },
+            { id: 28, text: "一度決めたことは、簡単に変えないほうがいい。", axis: "J_P", direction: "pos" },
+            { id: 29, text: "予定外の変更にも、その場で柔軟に対応できる。", axis: "J_P", direction: "neg" },
+            { id: 30, text: "計画より、その時の気分や流れに任せて行動したい。", axis: "J_P", direction: "neg" },
+            { id: 31, text: "締め切り直前のほうが、集中力が高まり良いものができる。", axis: "J_P", direction: "neg" },
+            { id: 32, text: "途中変更で計画をガラッと変えることに抵抗はない。", axis: "J_P", direction: "neg" }
+        ];
+
+        const typesData = [
+            {
+                id: "ISTJ",
+                name: "ロジカル実務人材",
+                catchcopy: "正確さと責任感で流れを整え、\n仕組みを磨き込み、\nチームの土台を安定させる。",
+                strengths: [
+                    "正確さと誠実さで信頼を積む",
+                    "リスクを抑え安定運用できる",
+                    "情報を整理し筋道を立てる",
+                    "手順を磨き込み品質を上げる"
+                ],
+                tendencies:
+                    "■ 計画を形にする実直さ\nリスクを落ち着いて見積もり、手順を整えて一歩ずつ前に進みます。約束を守る姿勢が強く、抜けを減らしながら成果までの筋道を示します。多少時間がかかっても確実に仕上げるため、任せた側が安心できます。積み重ねを重視するため、長期のプロジェクトでも着実に前へ進めます。\n\n" +
+                    "■ 再現性を磨く職人肌\n同じ品質を安定して出すためにプロセスを磨き込むことを惜しみません。チェックリストや基準づくりでバラつきを抑え、誰がやっても再現できる形に整えます。小さな改善を積み上げるため、トラブル時も素早く立て直せます。結果として組織全体のミスと不安を減らします。\n\n" +
+                    "■ 誠実さが生む土台力\n細部まで丁寧に仕上げる誠実さが、長期の安心感を生みます。派手さはなくても静かで確かな貢献が積み上がり、チームの「土台」として欠かせない存在になります。信頼が厚くなるほど、自由度の高い改善や大事な案件を任されるようになります。",
+                jobs: [
+                    { title: "経理・財務", reason: "精度と基準遵守が活きる" },
+                    { title: "品質管理", reason: "手順整備と安定運用に強い" },
+                    { title: "総務・公務", reason: "秩序維持と改善の両立が得意" }
+                ]
+            },
+            {
+                id: "ISFJ",
+                name: "サポート実務人材",
+                catchcopy: "思いやりと安定感で支え、\n細やかな配慮を仕組みに変え、\n安心して働ける場をつくる。",
+                strengths: [
+                    "協調と配慮で関係を整える",
+                    "注意深く小さな変化を拾う",
+                    "安定運用と実務処理に強い",
+                    "安心感を与えるコミュニケーション"
+                ],
+                tendencies:
+                    "■ 相手目線の細やかな配慮\n相手の立場や状況を丁寧にくみ取り、安心して働ける環境づくりを進めます。声に出されない小さな変化にも気づき、先回りで動くため、不安を抱えたままにしません。感情の揺れにも敏感で、自然に気遣いができる頼もしさがあります。\n\n" +
+                    "■ 安定を支える実務力\n秩序と安定を大切にし、日々の運用を静かに底上げします。丁寧で抜けの少ない処理が信頼を集め、積み重ねが全体の品質を高めます。ルーチンを守りつつ改善点を見つけ、堅実に仕組みを整えるため、安心感が長く続きます。\n\n" +
+                    "■ 穏やかなコミュニケーション\n柔らかい言葉と誠実な対応で緊張をほぐし、相談しやすい空気をつくります。心理的安全性が高まることで報連相が増え、小さな課題も早期に解消されます。静かに寄り添う姿勢が、協力しやすい関係を育みます。",
+                jobs: [
+                    { title: "医療事務・バックオフィス", reason: "配慮と安定運用が強み" },
+                    { title: "介護・福祉サポート", reason: "安心感と丁寧さが活きる" },
+                    { title: "学校/人事サポート", reason: "関係づくりと実務力を両立" }
+                ]
+            },
+            {
+                id: "ESTJ",
+                name: "実務リーダー人材",
+                catchcopy: "現場を仕切り、段取りを描き、\n決めた方針を実行し切って、\nチームを着実に前進させる。",
+                strengths: [
+                    "方針を示し実行し切る力",
+                    "段取りとリスク管理に強い",
+                    "ルール運用と改善を両立",
+                    "チームを束ねる推進力"
+                ],
+                tendencies:
+                    "■ 迷わず決めて前に進める\n何を優先すべきかを素早く判断し、段取りを組んで実行します。決めたことをやり切る姿勢が迷いを減らし、プロジェクトを止めません。周囲を巻き込みながら推進する頼もしさがあります。\n\n" +
+                    "■ 現場と管理の橋渡し\nルール運用と改善のバランスを取り、現場とマネジメントを滑らかにつなぎます。リスクを見ながらもスピードを落とさず、混乱を抑えて成果に導きます。数字と実務の両面を見て手当てできるのが強みです。\n\n" +
+                    "■ 再現性を生む進め方\n手順を整え、同じ品質を安定して出せる仕組みを作ります。属人化を減らし、チーム全体の動きを加速させることで、安心感とスピードを両立させます。改善サイクルを回し続ける持久力も備えています。",
+                jobs: [
+                    { title: "オペ/総務マネジメント", reason: "運用と改善のバランスが強み" },
+                    { title: "店舗/拠点マネージャー", reason: "現場統率と段取り力が活きる" },
+                    { title: "PMO・実行リーダー", reason: "計画遂行と管理に適性" }
+                ]
+            },
+            {
+                id: "ESFJ",
+                name: "コミュニケーション管理人材",
+                catchcopy: "つながりを築き、空気を整え、\n必要な情報を届けながら、\nチームを温かくまとめる。",
+                strengths: [
+                    "共感と調整で対立を和らげる",
+                    "支援と発信をバランスよく行う",
+                    "橋渡し役として信頼を築く",
+                    "場の空気を明るく保てる"
+                ],
+                tendencies:
+                    "■ 空気を和らげる調整力\n人の気持ちをくみ取り、場を明るく保ちながら対立をやわらげます。小さな違和感も早めに拾い、衝突を大きくしない工夫ができます。安心して話せる空気をつくることが得意です。\n\n" +
+                    "■ 橋渡し役としての安心感\n必要な情報をわかりやすく伝え、誤解を減らします。相談しやすい窓口として機能し、チームに心理的な安全性を広げます。誰に聞けばいいか迷わせない動きで信頼を高めます。\n\n" +
+                    "■ 支援と発信のバランス\nサポートとコミュニケーションを両立させ、協力関係を育てます。相手の立場を尊重しつつ必要なメッセージを届けるので、周囲が動きやすくなります。細やかな気配りでチームを落ち着かせます。",
+                jobs: [
+                    { title: "人事・労務・オンボーディング", reason: "関係構築と運用力が活きる" },
+                    { title: "CS/カスタマーサクセス", reason: "発信と調整の両立に強い" },
+                    { title: "教育・研修サポート", reason: "支援と空気づくりで効果を高める" }
+                ]
+            },
+            {
+                id: "INTJ",
+                name: "戦略構築人材",
+                catchcopy: "未来を読み、ルートを描き、\n仕組みで最適化しながら、\n長期成功への道を設計する。",
+                strengths: [
+                    "分析と構造化が得意",
+                    "長期視点で戦略を描く",
+                    "合理的に優先度を決める",
+                    "独自の切り口で最適化する"
+                ],
+                tendencies:
+                    "■ 先を読む設計思考\n複雑な状況を整理し、長期の勝ち筋を描きます。ゴールから逆算して道筋を作るため、迷いが少なく、周囲が進む方向を共有しやすくなります。視界の広さがリスクを抑えます。\n\n" +
+                    "■ 合理的な優先順位づけ\n限られた資源で成果を出すために、何を先にやるかを冷静に決めます。ムダをそぎ落とし、効果の高い手順に集中するので、プロジェクト全体の効率が上がります。\n\n" +
+                    "■ 仕組みで最適化\n独自の視点でプロセスを見直し、再現性のある仕組みに落とし込みます。深く考え抜いた計画がチームに安心感をもたらし、長期的な成功に向けて足場を固めます。",
+                jobs: [
+                    { title: "戦略企画・事業企画", reason: "長期設計と優先度設計が強み" },
+                    { title: "プロダクト/サービス設計", reason: "構造化と最適化に適性" },
+                    { title: "リサーチ・R&D", reason: "分析と仮説構築を活かす" }
+                ]
+            },
+            {
+                id: "INFJ",
+                name: "洞察サポート人材",
+                catchcopy: "静かな洞察で本質を捉え、\n相手に寄り添いながら、\n成長と安心を後押しする。",
+                strengths: [
+                    "洞察力で本質を捉える",
+                    "共感深く寄り添える",
+                    "言葉に深みがある",
+                    "価値観に基づき行動する"
+                ],
+                tendencies:
+                    "■ 本音に耳を傾ける洞察\n人の背景や感情を静かに受け止め、核心をやわらかくとらえます。安心して話せる場を整えるので、相手が肩の力を抜いて本音を語れます。\n\n" +
+                    "■ 寄り添いながら導く\n思いやりのある言葉で不安をほぐし、前向きな一歩を促します。短期で焦らず、長く伴走する姿勢が信頼につながります。\n\n" +
+                    "■ 価値観に忠実な姿勢\n自分の価値観を軸にぶれずに行動し、静かでも確かな影響力を発揮します。落ち着いた一貫性が周囲に安心感をもたらし、長期的な関係を支えます。",
+                jobs: [
+                    { title: "心理/カウンセリング支援", reason: "洞察と共感が核になる" },
+                    { title: "教育・メンタリング", reason: "伴走と成長支援に強い" },
+                    { title: "ライティング/編集", reason: "言葉の深みと洞察を活かす" }
+                ]
+            },
+            {
+                id: "ENTJ",
+                name: "エグゼクティブ推進人材",
+                catchcopy: "明確なゴールを掲げ、\n優先順位を切り、\n組織を率いて成果を取りに行く。",
+                strengths: [
+                    "決断が速く牽引力がある",
+                    "目標指向で逆算思考が得意",
+                    "戦略と実行を両立できる",
+                    "長期視点でリソース配分する"
+                ],
+                tendencies:
+                    "■ ゴールから逆算する力\n目的を明確に掲げ、そこから必要なステップを組み立てます。迷わず決める姿勢がチームの足並みをそろえ、動きを速めます。\n\n" +
+                    "■ 戦略と実行の両輪\n大きな方針を描きながら、現場の進め方も具体化します。難所でも優先度を示し、ぶれずに推進することで成果まで導きます。\n\n" +
+                    "■ 方向性とスピード\n方向をはっきり示し、スピード感をもって実行します。リソースを先回りで配分し、全体を加速させるリーダーシップが持ち味です。",
+                jobs: [
+                    { title: "経営企画・事業責任者", reason: "ゴール設計と推進に強み" },
+                    { title: "セールス/事業リード", reason: "優先度判断と牽引力が活きる" },
+                    { title: "組織マネジメント", reason: "戦略と実行の両輪を回せる" }
+                ]
+            },
+            {
+                id: "ENFJ",
+                name: "育成リーダー人材",
+                catchcopy: "人の可能性を信じ、\n前向きなエネルギーで導き、\nチームの成長を加速させる。",
+                strengths: [
+                    "共感と鼓舞で人を動かす",
+                    "強みを見つけ育成できる",
+                    "ポジティブな空気を作る",
+                    "調整と発信のバランスが良い"
+                ],
+                tendencies:
+                    "■ 可能性を信じて引き出す\n相手の強みを見つけ、前向きな言葉で伸ばします。小さな成功を積み重ねる設計が得意で、挑戦する意欲を高めます。\n\n" +
+                    "■ 明るい空気で導く\nチームの雰囲気をポジティブに保ち、迷ったときも笑顔で背中を押します。安心して意見を出せる場をつくり、前向きな挑戦を促します。\n\n" +
+                    "■ 調整と発信のバランス\n状況を見ながら調整し、必要なメッセージをわかりやすく届けます。一体感を生み、チーム全体を同じ方向に向けて進めます。",
+                jobs: [
+                    { title: "人材育成・研修", reason: "強み発見と鼓舞が核になる" },
+                    { title: "教育/キャリア支援", reason: "伴走と前向きな導きが得意" },
+                    { title: "チームリーダー", reason: "関係性と成果を両立できる" }
+                ]
+            },
+            {
+                id: "ESTP",
+                name: "アクション営業人材",
+                catchcopy: "瞬発力と交渉力で動き、\nチャンスを掴み取り、\n現場で結果を出すフィールド型。",
+                strengths: [
+                    "行動が速く即断即決できる",
+                    "交渉と折衝に強い",
+                    "社交性が高く打ち解けやすい",
+                    "変化に強く柔軟に動ける"
+                ],
+                tendencies:
+                    "■ 速く決めて動く瞬発力\nチャンスを見つけたらすぐに行動し、即断即決で前へ進みます。現場での判断が速く、流れをつくる初動が得意です。\n\n" +
+                    "■ 交渉で流れを変える力\n対人折衝に強く、勢いと説得力で場を動かします。状況が変わっても柔軟に路線を切り替え、チャンスをつかみ続けます。\n\n" +
+                    "■ 実戦から学ぶ吸収力\n動きながら学んだことをすぐ反映し、次の一手に活かします。スピード感を保ったまま改善を重ね、成果に結びつけます。",
+                jobs: [
+                    { title: "営業・法人折衝", reason: "即応と交渉力が活きる" },
+                    { title: "広告/代理店アカウント", reason: "対人と提案の速攻に強い" },
+                    { title: "フィールドセールス", reason: "動きながら最適解を出せる" }
+                ]
+            },
+            {
+                id: "ESFP",
+                name: "ムードメーカー人材",
+                catchcopy: "明るさと感受性で場を変え、\n人との距離を縮め、\nチームに活気を届ける。",
+                strengths: [
+                    "親しみやすく関係を築く",
+                    "柔軟でその場に合わせられる",
+                    "観察力で変化に気づく",
+                    "楽観性で空気を明るくする"
+                ],
+                tendencies:
+                    "■ 明るく場をほぐす力\n温かい魅力で緊張をやわらげ、初対面でもすぐに距離を縮めます。笑顔と柔らかな空気づくりで、チームに前向きな雰囲気を広げます。\n\n" +
+                    "■ 直感と柔軟さ\nその場の雰囲気を感じ取り、直感的に心地よい方向へ調整します。変化にも柔軟に対応し、空気を軽やかに保ちながら場を整えます。\n\n" +
+                    "■ 変化に気づく観察眼\n表情やトーンのわずかな変化にも敏感で、相手の気持ちに合わせて寄り添えます。やわらかな関係性を育て、周囲を安心させます。",
+                jobs: [
+                    { title: "接客・ホスピタリティ", reason: "親しみやすさと柔軟性が活きる" },
+                    { title: "イベント/コミュニティ運営", reason: "場づくりと発信が得意" },
+                    { title: "クリエイティブアシスト", reason: "感性と対人力を両立" }
+                ]
+            },
+            {
+                id: "ISTP",
+                name: "実践問題解決人材",
+                catchcopy: "冷静に状況を読み、\n手を動かしながら最適解を見つけ、\n現場で素早く片付ける。",
+                strengths: [
+                    "状況把握と迅速な判断が得意",
+                    "手を動かし技術で解く",
+                    "トラブルでも冷静に対応",
+                    "一人でも高い集中力を出せる"
+                ],
+                tendencies:
+                    "■ 冷静に状況を読む\n事実をもとに落ち着いて状況を把握し、感情に振り回されず判断します。トラブルが起きても慌てず、まず優先度を見極めます。\n\n" +
+                    "■ 手を動かして解決する\n実際に触れながら理解を深め、技術で素早く片付けます。現場での即応力が高く、やりながら修正するスタイルが持ち味です。\n\n" +
+                    "■ 集中してやり切る\n一度スイッチが入ると高い集中力で仕上げます。無駄のない動きで最短距離を探し、最適解に速くたどり着きます。",
+                jobs: [
+                    { title: "エンジニア/テックサポート", reason: "手を動かし解決する力が活きる" },
+                    { title: "整備・フィールドエンジ", reason: "現場対応と冷静さが強み" },
+                    { title: "セキュリティ/インフラ", reason: "分析と即応で対処する" }
+                ]
+            },
+            {
+                id: "ISFP",
+                name: "感性クリエイティブ人材",
+                catchcopy: "繊細な美意識で世界を切り取り、\n静かに表現を重ね、\n作品で人を惹きつける。",
+                strengths: [
+                    "美意識とセンスが高い",
+                    "相手に寄り添う共感性",
+                    "丁寧で正確な仕上げ",
+                    "表現力で世界観を形にする"
+                ],
+                tendencies:
+                    "■ 美しさに敏感な感性\n直感的に心地よさや美しさを捉え、高いセンスで形にします。細部までこだわる丁寧さが作品に表れ、仕上がりの質を引き上げます。\n\n" +
+                    "■ 優しく寄り添う表現\n自分の世界観を大切にしながら、相手への思いやりを表現に込めます。静かでも温かい表現が心に残り、受け手に安心感を与えます。\n\n" +
+                    "■ 静かな存在感\n控えめでも質の高さで印象を残します。積み上げた表現が静かに強い影響力を持ち、信頼につながります。",
+                jobs: [
+                    { title: "デザイナー/ビジュアル制作", reason: "美意識と丁寧さが活きる" },
+                    { title: "メイク/スタイリング", reason: "感性と手仕事を両立" },
+                    { title: "フォト・映像クリエイター", reason: "世界観の表現に強い" }
+                ]
+            },
+            {
+                id: "INTP",
+                name: "アイデア発明人材",
+                catchcopy: "論理で構造を分解し、\n独創的な仮説を組み上げ、\n新しい仕組みを生み出す。",
+                strengths: [
+                    "分析と仮説構築が得意",
+                    "独創的な発想で枠を越える",
+                    "探求心が強く深掘りする",
+                    "冷静で客観的に判断する"
+                ],
+                tendencies:
+                    "■ 構造を見抜く分析力\n複雑な事象を冷静に分解し、仕組みを理解します。論理で筋道を立てることに喜びを感じ、問題の根っこを探るのが得意です。\n\n" +
+                    "■ 独創的な仮説づくり\n強い好奇心から生まれる発想で、新しい枠組みを考えます。常識に縛られず組み立てる力があり、アイデアを論理で裏打ちできます。\n\n" +
+                    "■ 探求を楽しむ姿勢\n深く掘り下げることをいとわず、納得するまで考え続けます。知的な探求心がモチベーションとなり、革新への道を開きます。",
+                jobs: [
+                    { title: "研究・リサーチ", reason: "仮説構築と深掘りが活きる" },
+                    { title: "テクノロジー企画", reason: "構造化と発想を両立" },
+                    { title: "データサイエンス/設計", reason: "論理と独創性を活かす" }
+                ]
+            },
+            {
+                id: "INFP",
+                name: "共感クリエイティブ人材",
+                catchcopy: "優しさと想像力で心を捉え、\n物語や表現に乗せて、\n人の感情を動かす。",
+                strengths: [
+                    "豊かな想像力で描ける",
+                    "共感力が高く寄り添える",
+                    "感情を言語化する表現力",
+                    "価値観に忠実で誠実"
+                ],
+                tendencies:
+                    "■ 心に寄り添う共感力\n人の感情を丁寧に受け止め、安心して本音を話してもらえる関係を築きます。背景を想像しながら最適な言葉を選び、静かに支えることができます。\n\n" +
+                    "■ 物語を形にする想像力\n理想や物語を思い浮かべ、それを言葉や表現で具体的に描きます。読み手や聞き手の心を動かすストーリーづくりが得意で、価値観をあたたかく伝えます。\n\n" +
+                    "■ 誠実で温かなまなざし\n静かで誠実な姿勢が信頼を生みます。相手のペースを尊重しながら長く伴走し、穏やかな影響で関係を育て続けます。",
+                jobs: [
+                    { title: "ライター/編集", reason: "感情と言葉の橋渡しが得意" },
+                    { title: "カウンセリング/支援", reason: "共感と誠実さを活かす" },
+                    { title: "クリエイティブ職", reason: "世界観を作品にできる" }
+                ]
+            },
+            {
+                id: "ENTP",
+                name: "発想逆転人材",
+                catchcopy: "既存の枠をひっくり返し、\n議論で新しい視点を提示し、\n革新のきっかけを生む。",
+                strengths: [
+                    "発想転換で革新を起こす",
+                    "即興で議論をリードする",
+                    "企画力と好奇心が強い",
+                    "挑戦を楽しみ推進する"
+                ],
+                tendencies:
+                    "■ 発想をひっくり返す\n常識にとらわれず視点を切り替え、新しいアイデアを提案します。議論に新風を入れて周囲を刺激し、考え方の幅を広げます。\n\n" +
+                    "■ 即興で形にする\n思いついたことをすぐ言語化し、テンポよく議論をリードします。スピード感あるやり取りで、アイデアを形にしていきます。\n\n" +
+                    "■ 変化を楽しむ推進力\n挑戦を面白がり、自分から変化を起こします。試行錯誤を恐れず、場の流れを前向きに動かすことで、次の可能性を切り開きます。",
+                jobs: [
+                    { title: "新規事業・企画", reason: "枠を壊し発想する力が核" },
+                    { title: "マーケ/クリエイティブプラン", reason: "多視点で企画を練れる" },
+                    { title: "プロダクトディスカバリ", reason: "仮説と議論で方向を作る" }
+                ]
+            },
+            {
+                id: "ENFP",
+                name: "バイタリティ人材",
+                catchcopy: "行動力とポジティブ思考で流れを作り、\n人を巻き込みチャンスを掴み続け、\nチームを前へ押し出すエネルギッシュリーダー。",
+                strengths: [
+                    "ポジティブで前進力がある",
+                    "巻き込みと即応が得意",
+                    "即興の発想で企画を動かす",
+                    "社交性が高く関係を広げる"
+                ],
+                tendencies:
+                    "■ エネルギッシュな推進力\n明るいエネルギーで流れをつくり、困難も前向きに乗り越えます。勢いが必要な場面で力を発揮し、停滞を打開します。\n\n" +
+                    "■ 巻き込みのうまさ\n人とすぐにつながり、楽しさを共有しながら周囲を動かします。交渉や新しい挑戦で場を活性化させ、チームに勢いを与えます。\n\n" +
+                    "■ 即興で企画を走らせる\n直感的にアイデアを形にし、すぐ試して改善します。スピードを保ちながらチャンスをつかみ続け、前に進めます。",
+                jobs: [
+                    { title: "営業/アライアンス", reason: "巻き込みと即応で前進" },
+                    { title: "企画・プロデュース", reason: "発想と推進力を活かす" },
+                    { title: "広報/PR/CS", reason: "前向きな対話と発信が強み" }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentQuestionIndex = 0;
+        let answers = [];
+        let logicalJobs = [];    // 「向いている職種」の配列
+        let currentJobIndex = 0; // 現在選択中のインデックス
+
+        // --- FUNCTIONS ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            answers = [];
+            updateQuestion();
+            showScreen('question-screen');
+        }
+
+        function goBack() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                answers.pop();
+                updateQuestion();
+            } else {
+                showScreen('start-screen');
+            }
+        }
+
+        function updateQuestion() {
+            const q = questions[currentQuestionIndex];
+            const container = document.getElementById('question-container');
+
+            // Simple fade effect
+            container.classList.remove('fade-in');
+            container.classList.add('fade-out');
+
+            setTimeout(() => {
+                document.getElementById('question-text').innerText = q.text;
+
+                const answeredCount = currentQuestionIndex + 1;
+                const totalCount = questions.length;
+                const progressFraction = answeredCount / totalCount;
+                const progressPercent = Math.round(progressFraction * 100);
+
+                document.getElementById('question-counter').innerText =
+                    `Q ${answeredCount} / ${totalCount}　(${progressPercent}％完了)`;
+
+                // Progress Bar
+                document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+
+                // Back button visibility
+                document.getElementById('back-btn').style.visibility = currentQuestionIndex === 0 ? 'hidden' : 'visible';
+
+                container.classList.remove('fade-out');
+                container.classList.add('fade-in');
+            }, 200);
+        }
+
+        function handleAnswer(score) {
+            const q = questions[currentQuestionIndex];
+            answers.push({ questionId: q.id, score: score });
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                updateQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            const scores = { E_I: 0, S_N: 0, T_F: 0, J_P: 0 };
+
+            answers.forEach(ans => {
+                const q = questions.find(q => q.id === ans.questionId);
+                if (q.direction === 'pos') {
+                    scores[q.axis] += ans.score;
+                } else {
+                    scores[q.axis] -= ans.score;
+                }
+            });
+
+            const tieBreaker = (axis, pos, neg) => {
+                if (axis > 0) return pos;
+                if (axis < 0) return neg;
+                return pos; // 0のときは前者を優先
+            };
+
+            const p1 = tieBreaker(scores.E_I, "E", "I");
+            const p2 = tieBreaker(scores.S_N, "S", "N");
+            const p3 = tieBreaker(scores.T_F, "T", "F");
+            const p4 = tieBreaker(scores.J_P, "J", "P");
+
+            const typeId = `${p1}${p2}${p3}${p4}`;
+            const result = typesData.find(t => t.id === typeId) || typesData.find(t => t.id === "ESTJ") || typesData[0];
+
+            // Render Result
+            document.getElementById('result-name').innerText = result.name;
+            document.getElementById('result-catchcopy').innerText = result.catchcopy;
+
+            const strengthsList = document.getElementById('result-strengths');
+            strengthsList.innerHTML = '';
+            result.strengths.forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s;
+                strengthsList.appendChild(li);
+            });
+
+            const descEl = document.getElementById('result-description');
+            descEl.innerHTML = "";
+            if (result.tendencies) {
+                const blocks = result.tendencies.split("\n\n");
+                blocks.forEach(block => {
+                    const trimmed = block.trim();
+                    if (!trimmed) return;
+                    const lines = trimmed.split("\n");
+                    const titleLine = lines[0].replace(/^■\s*/, "");
+                    const bodyText = lines.slice(1).join("\n");
+
+                    const subH = document.createElement("h4");
+                    subH.textContent = `▪ ${titleLine}`;
+                    subH.style.margin = "8px 0 4px";
+                    subH.style.fontSize = "1rem";
+                    subH.style.color = "var(--color-primary-dark)";
+                    subH.style.fontWeight = "600";
+                    descEl.appendChild(subH);
+
+                    const subP = document.createElement("p");
+                    subP.textContent = bodyText;
+                    subP.style.margin = "0 0 12px";
+                    subP.style.fontSize = "0.95rem";
+                    subP.style.lineHeight = "1.7";
+                    descEl.appendChild(subP);
+                });
+            }
+
+            // 向いている職種カルーセル＋詳細（非ループ・中央スナップ）
+            logicalJobs = Array.isArray(result.jobs) ? result.jobs.slice() : [];
+            currentJobIndex = 0;
+
+            const container = document.getElementById('result-jobs');
+            container.innerHTML = '';
+
+            if (!logicalJobs.length) {
+                renderJobDetail(null, result);
+            } else {
+                logicalJobs.forEach((job, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'job-card' + (index === 0 ? ' active' : '');
+                    card.dataset.index = String(index);
+                    card.innerHTML = `
+                      <div class="job-illustration">🧭</div>
+                      <div class="job-title">${job.title}</div>
+                    `;
+                    card.addEventListener('click', () => {
+                        setActiveJob(index);
+                        centerJobCard(index, true);
+                    });
+                    container.appendChild(card);
+                });
+
+                // 最初のカードを中央に & 詳細表示
+                setActiveJob(0);
+                centerJobCard(0, false);
+                setupJobCarousel();
+            }
+
+            showScreen('result-screen');
+            window.scrollTo(0, 0);
+        }
+
+        function centerJobCard(index, smooth = true) {
+            const container = document.getElementById('result-jobs');
+            const cards = container.querySelectorAll('.job-card');
+            if (!cards.length || !cards[index]) return;
+            const card = cards[index];
+            const offset =
+                card.offsetLeft + card.offsetWidth / 2 - container.clientWidth / 2;
+            container.scrollTo({ left: offset, behavior: smooth ? 'smooth' : 'auto' });
+        }
+
+        function setupJobCarousel() {
+            const container = document.getElementById('result-jobs');
+            let scrollTimer = null;
+            container.addEventListener('scroll', () => {
+                if (scrollTimer) {
+                    clearTimeout(scrollTimer);
+                }
+                // スクロールが止まってからスナップ処理
+                scrollTimer = setTimeout(() => {
+                    const cards = Array.from(container.querySelectorAll('.job-card'));
+                    if (!cards.length) return;
+                    const containerRect = container.getBoundingClientRect();
+                    const centerX = containerRect.left + container.clientWidth / 2;
+
+                    let nearestIndex = 0;
+                    let minDist = Infinity;
+                    cards.forEach((card, i) => {
+                        const rect = card.getBoundingClientRect();
+                        const cardCenter = rect.left + rect.width / 2;
+                        const dist = Math.abs(cardCenter - centerX);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearestIndex = i;
+                        }
+                    });
+
+                    centerJobCard(nearestIndex, true);
+                    setActiveJob(nearestIndex);
+                }, 120);
+            });
+        }
+
+        function setActiveJob(index) {
+            currentJobIndex = index;
+            const cards = document.querySelectorAll('.job-card');
+            cards.forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            // 結果タイプ名（なければ空文字）
+            const typeNameEl = document.getElementById('result-name');
+            let typeName = "";
+            if (typeNameEl && typeof typeNameEl.innerText === "string") {
+                typeName = typeNameEl.innerText;
+            }
+            const srcResult =
+                typesData.find(t => t.name === typeName) ||
+                null;
+            const job = logicalJobs[index] || null;
+            renderJobDetail(job, srcResult);
+        }
+
+        // 職種ごとの詳細テキスト定義
+        const jobDetailsMap = {
+            "経理・財務": {
+                what:
+                    "経理・財務は、会社のお金の流れを正確に記録し、数字から経営の状態を把握する仕事です。日々の伝票処理や支払い管理に加えて、月次・年次決算、予算の策定や資金繰りのチェックなども担当します。ミスのない処理で信頼を積み上げながら、数字を通じて会社の健康状態を見守るポジションです。",
+                why:
+                    "経理・財務では、細かい数字を丁寧に扱いながら、決められたルールを着実に守る力が求められます。コツコツと積み上げる姿勢や、手順を磨き込み抜け漏れを減らすスタイルは、この職種と非常に相性が良いと言えます。また、安定して同じ品質を出し続ける実直さが、そのまま会社全体の安心感につながっていきます。",
+                how:
+                    "働き方としては、締め日や決算期など忙しいタイミングはあるものの、基本的には決まったサイクルに沿って業務を進めていくスタイルになります。リモートワークやフレックスとも相性が良く、仕組みを整えるほど効率化もしやすい仕事です。専門性を深めていくことで、将来的には財務企画や経営に近いポジションへのキャリアアップも目指せます。"
+            },
+            "品質管理": {
+                what:
+                    "品質管理は、製品やサービスが一定の基準を満たしているかを確認し、不良やトラブルを未然に防ぐ仕事です。検査やテストの設計、チェックリストやマニュアルの整備、現場とのやり取りを通じて、品質を安定させる仕組みをつくっていきます。表には出にくいものの、安心して提供できる状態を裏側から支える役割です。",
+                why:
+                    "品質管理では、手順を定めてブレなく運用する力や、小さな違和感を見逃さない注意深さが大きな武器になります。再現性を重視してプロセスを磨き込むスタイルは、不良を減らし、クレームやトラブルを減らすことへ直結します。地道な改善を続けていける粘り強さが、そのまま組織全体の信頼につながる仕事です。",
+                how:
+                    "働き方としては、現場とオフィスの両方に関わりながら、ルール作りと検証を行き来するイメージに近いです。ときには現場の声を聞きながら基準を調整したり、レポートをまとめて改善提案を行ったりします。派手な成果よりも、日々の「問題が起きない状態」を維持することに価値がある、縁の下の力持ちタイプの働き方です。"
+            },
+            "総務・公務": {
+                what:
+                    "総務・公務は、組織全体の運営を支える「なんでも屋」的な役割で、備品管理や契約書の扱い、各種手続き、イベント運営など幅広い仕事を担当します。公的機関や自治体のような現場では、住民対応や文書管理なども含まれます。表に出ない仕事も多いですが、誰もが安心して働ける環境や仕組みを整える重要なポジションです。",
+                why:
+                    "総務・公務では、ルールをきちんと守りながらも、現場の実情に合わせて工夫する力が求められます。手順を整え、抜け漏れを減らす実務力や、周囲の人を自然とサポートできるスタイルは、この領域で大きな強みになります。また、一度任されたことを最後までやり切る真面目さが、高い信頼となって返ってくる仕事です。",
+                how:
+                    "働き方は、日々のルーチン業務と、突発的な問い合わせやトラブル対応の両方に関わるスタイルになります。社内のさまざまな部署とやり取りをしながら、地道に物事を前に進めていくイメージです。年次イベントや制度変更など、少し長いスパンで準備して形にする仕事も多く、じっくり腰を据えて関われる環境が整いやすい分野です。"
+            },
+            "医療事務・バックオフィス": {
+                what:
+                    "医療事務・バックオフィスは、病院やクリニックなどで受付対応や会計処理、レセプト作成、各種書類の管理を行う仕事です。医師や看護師のように前面には出ませんが、スムーズな診療や患者さんの安心感を支える重要な役割を担います。医療制度やルールに沿って、正確な処理を積み重ねていくポジションです。",
+                why:
+                    "この仕事では、丁寧なコミュニケーションと、細かな事務処理を安定してこなせる力が大きな武器になります。相手の不安に寄り添いながらも、決められたフローに沿って淡々と処理していくスタイルは、医療現場との相性が非常に良いと言えます。小さな変化に気づく感性や、安心感を与える接し方も、大きな強みとして生きてきます。",
+                how:
+                    "働き方としては、受付カウンターでの対面対応と、裏方での事務作業の両方に関わることが多いです。時間帯によって忙しさに波はありますが、業務の流れは比較的決まっているため、慣れてくるほど自分なりに工夫して進めやすくなります。長く続けるほど専門知識が蓄積され、職場からも頼られる存在になりやすい領域です。"
+            },
+            "介護・福祉サポート": {
+                what:
+                    "介護・福祉サポートは、高齢者や障がいのある方など、日常生活に支援が必要な人を近くで支える仕事です。身体介助だけでなく、話し相手になったり、生活のリズムづくりを一緒に考えたりする場面も多くあります。相手のペースに合わせて、安心して過ごせる環境を整える役割です。",
+                why:
+                    "この分野では、相手の感情に寄り添いながら、安定した支援を続ける力がとても重要になります。小さな変化に気づける観察眼や、穏やかで誠実なコミュニケーションは、利用者さんやご家族の安心感につながります。派手さはなくても、「いつも通り」を支え続ける姿勢が、そのまま大きな信頼となって返ってくる仕事です。",
+                how:
+                    "働き方としては、シフト制で朝・日中・夜間など時間帯ごとの役割を分担するスタイルが一般的です。チームで連携しながら情報共有を行い、一人ひとりの状態に合わせてケアの内容を調整していきます。身体的な負担がある場面もありますが、その分「ありがとう」がダイレクトに返ってくる、人とのつながりを強く感じられる職種です。"
+            },
+            "学校/人事サポート": {
+                what:
+                    "学校/人事サポートは、学生や教職員、社員がスムーズに学び・働けるように、事務や調整を通じて支える仕事です。窓口での問い合わせ対応、書類の管理、行事や研修の運営補助など、裏側から環境づくりを行います。表には出にくいものの、安心して相談できる「頼れる事務」として機能するポジションです。",
+                why:
+                    "この仕事では、相手の立場に立って説明したり、抜け漏れなく手続きを進めたりする力が求められます。安定した運用を大切にしながら、小さな改善を積み上げていくスタイルは、学校や人事部門との相性がとても良いです。穏やかなコミュニケーションで不安を和らげられることも、大きな強みとして評価されます。",
+                how:
+                    "働き方としては、決まったカレンダー（学期・年度・研修スケジュールなど）に合わせて業務が動くことが多いです。繁忙期は少しバタつくこともありますが、その分、事前の準備や段取りで落ち着いて乗り切りやすい環境です。長く関わるほど「誰に相談すればいいか分からない」といった不安を減らし、組織の安心感を底上げしていけます。"
+            },
+            "オペ/総務マネジメント": {
+                what:
+                    "オペ/総務マネジメントは、現場のオペレーションと組織運営の両方を見渡しながら、日々の業務が滞りなく回るように仕組みを整える仕事です。ルールづくりや業務フローの設計、メンバーへの役割分担、トラブル発生時の判断などを通じて、チーム全体を安定して動かしていきます。いわば「現場の司令塔」として機能するポジションです。",
+                why:
+                    "この職種では、方針を決めて周囲に示し、決めたことを最後までやり切る力が大きな武器になります。段取りを組み立て、リスクを見積もりながら進めるスタイルは、そのままオペレーション改善や総務運営の強さにつながります。メンバーの状況を見ながら、現場と管理側の橋渡し役になれる点も、あなたの特性が活きるポイントです。",
+                how:
+                    "働き方としては、現場メンバーとマネジメントの両方と会話しながら、日々の運営状況を把握し、必要に応じて手を打っていく形になります。ルーチンワークだけでなく、繁忙期の体制づくりやルール見直しなど、少し長いスパンの改善にも関わることが多い仕事です。安定した土台をつくるほど、チーム全体の動きがスムーズになり、自分の裁量も広がっていきます。"
+            },
+            "店舗/拠点マネージャー": {
+                what:
+                    "店舗/拠点マネージャーは、現場のスタッフとお客様の両方を見ながら、店舗全体の運営をリードする仕事です。売上管理やシフト作成、接客品質の確認、キャンペーン運用など、現場で起きていることを細かく見つつ、日々の方針を決めていきます。現場の最前線で「お店の顔」として機能するポジションです。",
+                why:
+                    "この仕事では、状況を見て素早く判断し、チームに分かりやすく指示を出す力が求められます。段取りを組んで仕組みを回しながら、トラブル時には自ら前に出て立て直すスタイルは、店舗運営と非常に相性が良いと言えます。ルールを守りつつ、現場の声を取り入れて改善していける実務リーダー気質が、そのまま大きな強みになります。",
+                how:
+                    "働き方としては、現場に立ちながらスタッフと一緒に動く時間と、バックヤードで数字やシフトを調整する時間の両方を行き来します。営業時間や繁忙時間帯に合わせて柔軟に動く必要はありますが、その分、成果が数字やお客様の反応として分かりやすく返ってくる仕事です。経験を重ねるほど、複数店舗やエリア全体を任されるキャリアにもつながっていきます。"
+            },
+            "PMO・実行リーダー": {
+                what:
+                    "PMO・実行リーダーは、プロジェクト全体の進行状況を管理し、計画どおりに物事が進むように段取りを組む仕事です。スケジュールやタスクの管理、関係者との調整、リスクの洗い出しと対応方針の検討などを通じて、プロジェクトを完了まで導きます。華やかなアイデアよりも、「やるべきことを確実にやり切る」実行力が求められる役割です。",
+                why:
+                    "この職種では、計画を立てて粘り強く実行し切る力や、リスクを冷静に見積もる力がそのまま武器になります。関係者が多くても、ルールや手順を整えて混乱を減らす動き方は、プロジェクトマネジメントと非常に相性が良いです。進行が滞りそうな箇所を先回りで手当てできる実務感覚も、大きな強みとして活きてきます。",
+                how:
+                    "働き方としては、オンライン・オフラインの打ち合わせに参加しながら、タスク管理ツールや資料を使って進行状況を可視化していくイメージです。自分一人で成果を出すというより、チーム全体が動きやすい土台を整えることに価値があります。プロジェクトが完了するたびにナレッジが蓄積され、より大きな案件を任されるようになっていくキャリアです。"
+            },
+            "人事・労務・オンボーディング": {
+                what:
+                    "人事・労務・オンボーディングは、採用後の手続きや勤怠管理、労務対応などを通じて、社員が安心して働ける環境を整える仕事です。入社手続きや各種申請フローの案内、就業ルールの説明なども含めて、組織とメンバーの橋渡し役として機能します。地味に見えて、会社の土台を支える非常に重要なポジションです。",
+                why:
+                    "この仕事では、制度やルールを丁寧に理解し、相手に分かりやすく説明する力が活きてきます。細かな実務を抜け漏れなく進めるスタイルや、相手目線で配慮しながら話せる姿勢は、人事・労務領域と非常に相性が良いです。トラブルを未然に防ぎ、社員が不安なく働ける状態を整えることが、そのまま大きな貢献になります。",
+                how:
+                    "働き方としては、日々の問い合わせ対応と、定期的な制度運用（入社・退職・評価期間など）を並行して進めていくスタイルが一般的です。オンラインツールや人事システムを使いこなしながら、社内のさまざまな部署と連携する機会も多い仕事です。長く経験を積むほど、メンバーからも「まず相談したい人」として頼られる存在になっていきます。"
+            },
+            "CS/カスタマーサクセス": {
+                what:
+                    "CS/カスタマーサクセスは、既存のお客様と継続的に関わりながら、サービスの活用度を高め、解約を防ぎつつ成果創出を支援する仕事です。導入後のサポートや活用提案、定期的な面談やフォロー連絡を通じて、お客様の成功体験を一緒につくっていきます。単なる問い合わせ対応ではなく、伴走型のパートナーとして関わるポジションです。",
+                why:
+                    "この職種では、相手の状況を丁寧にヒアリングし、言葉を選びながら提案できるコミュニケーション力が大きな武器になります。相手目線で物事を整理し、「何から始めればいいか」を一緒に考えられるスタイルは、カスタマーサクセスと非常に相性が良いです。関係性を大切にしながら、着実に成果につなげていく姿勢が強みとして活きます。",
+                how:
+                    "働き方としては、オンラインミーティングやメール、チャットなどを使って複数の顧客を並行して担当するケースが多いです。短期的な問い合わせ対応に加え、中長期の目標設定や活用プランのすり合わせなど、時間軸の違うタスクが混ざる働き方になります。関係性が深まるほど、顧客から信頼され、新しい提案の余地も広がっていきます。"
+            },
+            "教育・研修サポート": {
+                what:
+                    "教育・研修サポートは、社内外の研修や勉強会がスムーズに運営されるように、企画の補助や当日の運営、受講者対応などを行う仕事です。資料準備や会場・オンライン環境の整備、アンケート回収や振り返りのまとめなどを通じて、学びの場を裏側から支えます。受講者と講師の双方が安心して集中できる環境づくりが役割です。",
+                why:
+                    "この仕事では、細かな段取りを事前に整えたり、当日のイレギュラーに落ち着いて対応したりする力が活きてきます。相手の立場を想像しながら配慮できるスタイルや、穏やかなコミュニケーションで場を和らげられる姿勢は、教育・研修のサポート業務にとても向いています。目立たなくても、場の成功に責任を持てるところが大きな強みになります。",
+                how:
+                    "働き方としては、研修のスケジュールに合わせて準備期間と本番の運営がサイクルのように訪れるイメージです。オンライン配信やハイブリッド開催も増えており、ツール操作や簡単なトラブル対応が求められる場面もあります。毎回の場づくりを通じて、教育分野の知見やファシリテーションへの理解も自然と深まっていきます。"
+            },
+            "戦略企画・事業企画": {
+                what:
+                    "戦略企画・事業企画は、市場や自社の状況を分析し、どの方向に進むべきかを整理して提案する仕事です。売上・コストなどの数字だけでなく、競合動向や顧客ニーズを踏まえながら、中長期の戦略や新規施策の企画を行います。経営陣や現場メンバーと議論を重ねて、会社の進むべき道筋を描くポジションです。",
+                why:
+                    "この職種では、複雑な情報を構造化し、仮説を立てて整理する力が大きな武器になります。長期視点で物事を考えたり、感覚だけでなく根拠を意識して判断する姿勢は、戦略・事業企画の場で強く評価されます。感情に流されずに冷静に優先順位をつけていける点も、企画を現実的なプランに落とし込むうえで重要な強みとなります。",
+                how:
+                    "働き方としては、資料作成や数値分析に集中する時間と、関係者とのミーティングで意見をすり合わせる時間が交互に訪れるスタイルです。短期の施策検討と、半年〜数年スパンの方向性検討が同時に走ることも多く、頭の切り替えが求められます。経験を積むほど、経営に近い立場で意思決定に関わるチャンスも増えていきます。"
+            },
+            "プロダクト/サービス設計": {
+                what:
+                    "プロダクト/サービス設計は、ユーザーが実際に触れるサービスや機能の全体像を描き、どのような体験にするかを設計する仕事です。要件定義や画面構成、ユーザーフローの整理などを通じて、「誰に・何を・どう届けるか」を形にしていきます。エンジニアやデザイナー、ビジネス側のメンバーと協力しながら進めるポジションです。",
+                why:
+                    "この職種では、複数の要素を整理しながら、全体の構造をイメージできる力が活きてきます。論理的にパターンを分解し、現実的に実装できる形に落とし込むスタイルは、プロダクト設計と非常に相性が良いです。ユーザー視点とビジネス視点の両方を意識しながら調整していける点も、大きな強みとして評価されます。",
+                how:
+                    "働き方としては、要件整理や仕様書作成に集中する時間と、開発チームやステークホルダーとのディスカッションを行う時間がセットで動きます。リモート中心でコラボレーションツールを使いながら進めるケースも多く、情報整理力が求められる仕事です。リリース後のユーザー反応を踏まえて改善を重ねる中で、設計の解像度も高まっていきます。"
+            },
+            "リサーチ・R&D": {
+                what:
+                    "リサーチ・R&Dは、新しい技術や市場の可能性を調査・検証し、将来のプロダクトや事業の種を見つける仕事です。データ収集や実験、文献調査などを通じて、仮説を立てては検証し、その結果をわかりやすく共有していきます。すぐに収益にならなくても、中長期の成長につながる知見を蓄えるポジションです。",
+                why:
+                    "この職種では、好奇心を持って物事を深掘りし、納得するまで調べ続けられる姿勢が大きな強みになります。仮説を立てて検証するサイクルを楽しめるスタイルや、数字や事実に基づいて冷静に結論を出せる点は、リサーチ・R&Dと非常に相性が良いです。すぐに答えが出ないテーマにも粘り強く向き合えるところが評価されます。",
+                how:
+                    "働き方としては、個人での集中作業と、定期的な共有・レビューの場を行き来するスタイルが多いです。研究テーマによっては長期間にわたって取り組むこともあり、自分なりのペース配分やタスク管理が求められます。成果がすぐに見えにくい分、チームで仮説と結果をオープンに共有しながら進めていく文化になじみやすい人に向いています。"
+            },
+            "心理/カウンセリング支援": {
+                what:
+                    "心理/カウンセリング支援は、人の悩みや不安に耳を傾けながら、安心して話せる場をつくり、気持ちや行動の整理をサポートする仕事です。対話を通じて背景や感情を丁寧にくみ取り、必要に応じて専門機関へのつなぎ役になることもあります。相手が自分のペースで前に進めるように伴走するポジションです。",
+                why:
+                    "この仕事では、相手の気持ちに深く共感しながらも、冷静に状況を整理する力が求められます。言葉を選びながら丁寧に対話できるスタイルや、すぐに結論を押し付けずに見守る姿勢は、カウンセリング支援と非常に相性が良いです。表に出てこない本音や背景に自然と目を向けられる感性も、大きな強みになります。",
+                how:
+                    "働き方としては、対面やオンラインでのセッションに加え、記録作成や振り返りの時間もセットで必要になります。一度の面談で完結するケースもあれば、長く伴走しながら少しずつ変化を支えていく関わり方もあります。感情的に引きずられすぎないよう、自分自身のケアやスーパービジョンを含めた働き方を整えていくことも大切です。"
+            },
+            "教育・メンタリング": {
+                what:
+                    "教育・メンタリングは、学びたい人や成長したい人に対して、知識や経験を分かち合いながら伴走する仕事です。レクチャーだけでなく、質問に答えたり、課題へのフィードバックを行ったりしながら、相手が自分の力で前に進めるようサポートします。短期講座から長期的なメンタリングまで、関わり方はさまざまです。",
+                why:
+                    "この職種では、相手のペースに合わせて言葉を選び、励ましながら導ける力が活きてきます。できている点を見つけて言語化し、次の一歩を一緒に考えられるスタイルは、教育やメンタリングと非常に相性が良いです。感情面にも配慮しながら、長く関係を育てていけるところも大きな強みになります。",
+                how:
+                    "働き方としては、オンライン・対面でのセッションに加え、教材作成やフィードバック文の作成などに時間を使うことが多いです。複数の受講者やメンティーを並行して見るケースもあり、スケジュール管理や情報整理が求められます。関わりが深まるほど、相手の成長を間近で感じられるやりがいの大きい仕事です。"
+            },
+            "ライティング/編集": {
+                what:
+                    "ライティング/編集は、情報や想いを読み手に伝わる形に整え、文章として届ける仕事です。取材や資料収集を行いながら構成を考え、言葉のトーンや表現を調整して、読みやすく深みのあるコンテンツに仕上げていきます。紙・Web・SNSなど媒体を問わず、言葉を通じて価値を届けるポジションです。",
+                why:
+                    "この職種では、感情や背景を丁寧にすくい取り、言葉に落とし込む力が大きな武器になります。相手の意図をくみ取りながら、読み手目線で構成を組み立てられるスタイルは、ライティングや編集の場で強く評価されます。細部の表現にこだわりつつ、全体として伝わりやすさを重視できる点も、重要な強みになります。",
+                how:
+                    "働き方としては、一人で集中して原稿を書く時間が多く、取材や打ち合わせの日と執筆・編集の日が分かれることが一般的です。フリーランスとして複数の案件を掛け持ちするスタイルもあれば、社内のコンテンツ担当として腰を据えて取り組むスタイルもあります。納期とのバランスを取りつつ、自分のペースを作りやすい仕事です。"
+            },
+            "経営企画・事業責任者": {
+                what:
+                    "経営企画・事業責任者は、会社や事業全体の方向性を定め、その実現に向けて戦略と組織運営の両面から舵取りをする仕事です。市場分析や数値管理に加えて、組織づくりや人材配置、重要な投資判断など、幅広いテーマに関わります。大きなゴールに向けて、チームを率いて成果を取りに行くポジションです。",
+                why:
+                    "この職種では、目標から逆算して道筋を描き、必要なリソースを配分する力が求められます。決めるべきことを迷わず決断し、方針を周囲に示していけるスタイルは、経営企画・事業責任者として大きな強みになります。短期的な数字と中長期の戦略の両方を見てバランスを取れる点も、非常に評価されるポイントです。",
+                how:
+                    "働き方としては、会議や意思決定の場が多くなる一方で、1人で深く考える時間も意識的に確保する必要があります。社内外の多くのステークホルダーと関わるため、コミュニケーション量は自然と多くなります。責任の大きさはありますが、その分、方向性を自らデザインできる裁量の大きなポジションです。"
+            },
+            "セールス/事業リード": {
+                what:
+                    "セールス/事業リードは、売上の最前線に立ちながら、チームを率いて新規開拓や既存顧客の深耕を進める仕事です。個人での営業活動だけでなく、戦略のすり合わせやメンバーの育成、他部門との連携調整なども担います。数字へのコミットと現場の統率を両立させるポジションです。",
+                why:
+                    "この職種では、スピード感を持って意思決定しつつ、チームを引っ張っていく力が大きな武器になります。優先順位を見極め、限られた時間で成果につながる動きを選び取るスタイルは、事業リードと非常に相性が良いです。対人交渉の場でも、落ち着いた判断と推進力を両立できることが強みとして活きてきます。",
+                how:
+                    "働き方としては、商談や打ち合わせで外出・オンラインミーティングが多くなる一方で、社内での数値確認や戦略検討の時間も必要になります。短期の売上目標と中期的な顧客関係構築の両方を追うことになり、メリハリのあるスケジュール管理が求められます。成果がダイレクトに数字や評価に反映される、やりがいとプレッシャーの両方を感じやすい仕事です。"
+            },
+            "組織マネジメント": {
+                what:
+                    "組織マネジメントは、チームや部門全体が機能するように、人材配置や評価、コミュニケーション設計などを通じて土台を整える仕事です。メンバーとの1on1や目標設定、役割分担の見直しなどを行いながら、成果と働きやすさの両立を目指します。組織の「器」をデザインしていくポジションです。",
+                why:
+                    "この職種では、個々の強みや課題を見極めながら、公平なルールと柔軟な運用のバランスを取る力が活きてきます。感情に振り回されず、必要なときに方針を示せるスタイルは、組織マネジメントと非常に相性が良いです。戦略と現場感覚の両方を持ち合わせていることが、大きな強みとなります。",
+                how:
+                    "働き方としては、メンバーとの対話や会議が多くなる一方で、人事・経営との調整や資料作成などの時間も必要です。短期的な成果だけでなく、中長期の組織づくりを意識しながら動くことが求められます。チームが成長していくプロセスを見守りながら、自身もマネジメントスキルを磨き続けられる仕事です。"
+            },
+            "人材育成・研修": {
+                what:
+                    "人材育成・研修は、社員のスキルやマインドを高めるための研修プログラムを企画・運営する仕事です。ニーズのヒアリングからテーマ設定、講師のアサイン、当日のファシリテーションまで、一連のプロセスに関わることもあります。組織の成長を“人”の側面から支えるポジションです。",
+                why:
+                    "この職種では、一人ひとりの強みや伸びしろを見つけて言語化し、前向きなチャレンジを後押しする力が活きてきます。ポジティブなエネルギーで場を温めながら、学びを具体的な行動につなげるスタイルは、人材育成と非常に相性が良いです。相手の可能性を信じて投げかけができることも、大きな強みになります。",
+                how:
+                    "働き方としては、研修の無い期間は企画・準備に集中し、開催期間は運営やフォローに忙しく動くリズムになりがちです。オンライン・対面の両方で場づくりを行う機会が増えており、ファシリテーションスキルも自然と磨かれます。関わった人の成長が目に見えて分かる、やりがいの大きい仕事です。"
+            },
+            "教育/キャリア支援": {
+                what:
+                    "教育/キャリア支援は、学生や社会人が自分の進路やキャリアについて考え、選択していくプロセスをサポートする仕事です。面談やガイダンス、セミナーなどを通じて情報提供や相談対応を行い、必要に応じて選考対策やスキル習得のサポートも行います。長期的な視点で「その人らしい道」を一緒に探るポジションです。",
+                why:
+                    "この職種では、相手の話を丁寧に聞き取りながら、可能性を信じて言葉をかけ続ける力が求められます。短期的な正解を押し付けるのではなく、選択肢を一緒に整理し、納得感のある決断を支えるスタイルは、キャリア支援と非常に相性が良いです。前向きなエネルギーで背中を押せることも、大きな強みになります。",
+                how:
+                    "働き方としては、個別面談や少人数の相談会、講義形式のガイダンスなど、多様な場づくりを組み合わせていくスタイルです。相談件数が増える時期と落ち着く時期に波があるため、繁忙期に向けた準備や情報整理も重要になります。続けていくほど、さまざまなキャリアのパターンに触れられ、自身の視野も広がっていきます。"
+            },
+            "チームリーダー": {
+                what:
+                    "チームリーダーは、現場のメンバーと一緒に手を動かしながら、日々の業務がスムーズに回るように調整・推進していく仕事です。目標の共有やタスクの割り振り、進捗の確認、困っているメンバーのフォローなどを通じて、チーム全体のパフォーマンスを底上げします。プレイヤーとマネジメントの中間的なポジションです。",
+                why:
+                    "この職種では、メンバー一人ひとりと信頼関係を築きながら、必要なときには方向性を示せる力が活きてきます。自分だけで成果を出すのではなく、全体としての成果を考えて動けるスタイルは、チームリーダーと非常に相性が良いです。コミュニケーションと実務力の両面をバランスよく使えることが強みになります。",
+                how:
+                    "働き方としては、プレイヤーとしての仕事と、チームの状況を見渡して調整する仕事が混ざる形になります。メンバーとの1on1や日々の声かけを通じて、小さな変化や負荷の偏りを早めにキャッチすることも大切です。リーダー経験を重ねるほど、大きな組織を任されるマネジメントキャリアへの道も開けていきます。"
+            },
+            "営業・法人折衝": {
+                what:
+                    "営業・法人折衝は、企業や組織を相手に自社のサービスや商品を提案し、契約・継続につなげていく仕事です。商談の準備やヒアリング、提案資料の作成、条件交渉などを通じて、相手の課題に合った解決策を形にしていきます。数字へのコミットと信頼関係づくりの両方が求められるポジションです。",
+                why:
+                    "この職種では、状況に応じて素早く判断し、臨機応変に言葉を選べる力が大きな武器になります。相手の表情や反応をよく観察しながら、その場でアプローチを変えていける柔軟さは、法人営業と非常に相性が良いです。プレッシャーのある場面でも前向きに切り替えられるメンタルの強さも、強みとして活きてきます。",
+                how:
+                    "働き方としては、外出やオンライン商談が多く、日によってスケジュールが大きく変わることもあります。移動時間や商談の合間を使って資料作成や振り返りを行うなど、自分で時間を組み立てる力が求められます。成果が数字としてはっきり見える分、達成感も分かりやすい仕事です。"
+            },
+            "広告/代理店アカウント": {
+                what:
+                    "広告/代理店アカウントは、クライアントと制作チームの間に立ち、広告やプロモーション施策を前に進める仕事です。要望のヒアリングや企画提案、スケジュール調整、クリエイティブの方向性すり合わせなどを通じて、案件全体をディレクションしていきます。対人コミュニケーションと企画力の両方を使うポジションです。",
+                why:
+                    "この職種では、テンポの速い会話の中で要点をつかみ、柔らかくも的確に意見を伝えられる力が大きな武器になります。状況が変わっても前向きに路線変更できる柔軟さや、人を巻き込みながら物事を動かすスタイルは、代理店アカウントと非常に相性が良いです。多様な関係者と楽しくやり取りできる対人力も強みになります。",
+                how:
+                    "働き方としては、クライアントとの打ち合わせや社内ミーティングが多く、同時に複数案件を走らせることが一般的です。締め切り前は忙しくなりがちですが、その分キャンペーンの反響が見えたときの達成感も大きい仕事です。さまざまな業界の案件に関わることで、知見や人脈も広がっていきます。"
+            },
+            "フィールドセールス": {
+                what:
+                    "フィールドセールスは、実際に顧客のもとへ足を運び、現場の空気を感じながら商談を進める営業スタイルの仕事です。訪問や出張を通じて、相手の状況や課題を直接見聞きしながら、最適な提案をその場で組み立てていきます。動きながら成果を取りに行く、フィールド型のポジションです。",
+                why:
+                    "この職種では、フットワーク軽く行動し、その場で柔軟に対応できる力が大きな武器になります。現場で起きていることを素早くつかみ、即興で提案内容を調整できるスタイルは、フィールドセールスに非常に向いています。変化の多い状況でも前向きに楽しめる気質も、強みとして評価されます。",
+                how:
+                    "働き方としては、外出や移動が多く、日によって訪問件数やスケジュールが変化するのが特徴です。オフィスワークだけでなく、現場でのコミュニケーションが中心になるため、飽きにくく刺激の多い日々になりやすい仕事です。結果が出れば出るほど、自分の裁量で動ける範囲も広がっていきます。"
+            },
+            "接客・ホスピタリティ": {
+                what:
+                    "接客・ホスピタリティは、お客様と直接向き合いながら、心地よい体験やサービスを提供する仕事です。受付や案内、商品・サービスの説明、困りごとの対応などを通じて、相手の不安やストレスを減らし、満足度を高めていきます。「また来たい」と思ってもらえる時間をつくるポジションです。",
+                why:
+                    "この職種では、初対面の人ともすぐに打ち解けられる親しみやすさや、その場の空気を明るくできる力が大きな強みになります。マニュアルに沿うだけでなく、相手の表情や雰囲気を感じ取りながら一言を添えられるスタイルは、接客・ホスピタリティと非常に相性が良いです。細やかな気配りが自然にできることも、評価されやすいポイントです。",
+                how:
+                    "働き方としては、シフト制で土日・祝日を含む勤務になることも多く、ピークタイムと落ち着く時間帯のメリハリがあります。立ち仕事やお客様対応が続くこともありますが、その分「ありがとう」という言葉を直接もらえる場面も多い仕事です。経験を重ねることで、リーダーや教育担当としてステップアップする道も開けていきます。"
+            },
+            "イベント/コミュニティ運営": {
+                what:
+                    "イベント/コミュニティ運営は、セミナーや交流会、オンラインコミュニティなどの場を企画・運営し、参加者同士のつながりや学びを生み出す仕事です。企画立案から集客、当日の進行、アフターフォローまで、一連のプロセスに関わります。場の雰囲気づくりと運営の両方を担うポジションです。",
+                why:
+                    "この職種では、人と人をつなげることを楽しめる感性や、その場の空気を読みながら動ける柔軟さが大きな武器になります。参加者が安心して話せる雰囲気をつくり、自然なコミュニケーションを促せるスタイルは、イベント運営と非常に相性が良いです。明るさと段取り力の両方を活かせるフィールドと言えます。",
+                how:
+                    "働き方としては、準備期間とイベント当日とでリズムが大きく変わります。日中の運営だけでなく、夜や休日に開催されるイベントもあるため、柔軟な時間の使い方が必要になるケースもあります。その分、多様な人と出会い、ネットワークが広がっていく面白さのある仕事です。"
+            },
+            "クリエイティブアシスト": {
+                what:
+                    "クリエイティブアシストは、デザイナーやディレクター、ライターなどのクリエイターが本来の制作に集中できるよう、周辺業務をサポートする仕事です。素材の整理や簡単な加工、スケジュールや依頼内容のとりまとめ、チェック作業などを通じて、プロジェクト全体の進行を支えます。裏方としてクリエイティブチームを支えるポジションです。",
+                why:
+                    "この職種では、細かいタスクを丁寧にこなしつつ、相手の意図をくみ取って動ける力が活きてきます。指示を待つだけでなく、「ここまでやっておくと助かりそう」と先回りできるスタイルは、クリエイティブアシスタントと非常に相性が良いです。感性と実務力の両方を少しずつ伸ばしていける点も強みになります。",
+                how:
+                    "働き方としては、複数の案件やクリエイターを横断的にサポートすることも多く、日によって関わる内容が変わる柔軟なスタイルになります。リモートワークとも相性が良く、オンラインでのコミュニケーションやファイル管理のスキルも求められます。経験を積むことで、自身がクリエイター側にステップアップする道も見えてきます。"
+            },
+            "エンジニア/テックサポート": {
+                what:
+                    "エンジニア/テックサポートは、システムやプロダクトの技術的な問題を解決し、ユーザーや社内メンバーが安心して利用できるよう支える仕事です。問い合わせ対応や不具合調査、設定変更、改善提案などを通じて、トラブルを素早く片付けていきます。手を動かしながら問題を解決する実務型のポジションです。",
+                why:
+                    "この職種では、状況を冷静に整理し、原因を一つずつ切り分けていく力が大きな武器になります。感情に流されず事実ベースで判断できるスタイルや、実際に手を動かしながら試していく姿勢は、テックサポートと非常に相性が良いです。トラブルの中でも落ち着いて対応できる点も、強みとして評価されます。",
+                how:
+                    "働き方としては、チャットやチケットシステムでの対応が中心になることが多く、リモートワークとも相性の良い仕事です。緊急度の高い案件が入ることもありますが、その分、解決できたときの達成感も大きくなります。経験を積むほど、開発側へのフィードバックやプロダクト改善にも深く関わっていけるようになります。"
+            },
+            "整備・フィールドエンジ": {
+                what:
+                    "整備・フィールドエンジは、機械や設備、システムなどの現場に直接赴き、不具合対応やメンテナンスを行う仕事です。点検や修理、部品交換、稼働テストなどを通じて、現場が安全かつ安定して動く状態を保ちます。トラブル時にも素早く駆け付け、状況を見極めながら対処するポジションです。",
+                why:
+                    "この職種では、現場の状況を冷静に観察し、手を動かしながら原因を探っていく力が活きてきます。マニュアルだけでなく、自分の経験や勘も総動員して最適な対処を考えられるスタイルは、フィールドエンジニアと非常に相性が良いです。プレッシャーのかかる場面でも、黙々とやるべきことを進められる姿勢が強みになります。",
+                how:
+                    "働き方としては、客先や現場への出張・移動が発生することが多く、日によってスケジュールが大きく変わる特徴があります。急な呼び出しに対応することもありますが、その分、現場から直接感謝される場面も多い仕事です。経験を積むことで、トラブルの予防や設計改善の提案など、上流にも関わっていけるようになります。"
+            },
+            "セキュリティ/インフラ": {
+                what:
+                    "セキュリティ/インフラは、システムやネットワークが安全かつ安定して動き続けるように、設計・運用・監視を行う仕事です。障害対応やログ解析、アクセス管理、セキュリティ対策の実装などを通じて、トラブルを未然に防ぎます。ユーザーからは見えにくいものの、サービスを支える心臓部のようなポジションです。",
+                why:
+                    "この職種では、細かな兆候から異常に気づく観察力や、最悪のケースを想定して対策を打てる慎重さが大きな強みになります。地味な作業でもコツコツと続けられるスタイルや、最新情報を追いながら知識をアップデートしていける姿勢は、インフラ・セキュリティ分野と非常に相性が良いです。問題が起きない状態を当たり前に保つことに価値を感じられる人に向いています。",
+                how:
+                    "働き方としては、日々の監視やメンテナンスがベースにありつつ、障害発生時には一時的に負荷が高まるメリハリのあるスタイルになります。夜間や休日対応が必要な体制もありますが、その分シフト制で時間を調整しやすいケースも多いです。継続的にスキルを磨くことで、専門性の高いキャリアを築きやすい領域です。"
+            },
+            "デザイナー/ビジュアル制作": {
+                what:
+                    "デザイナー/ビジュアル制作は、ロゴやWebサイト、バナー、資料などのビジュアル表現を通じて、伝えたいメッセージや世界観を形にする仕事です。クライアントやチームからの要望を整理し、色やレイアウト、フォントなどを組み合わせて、分かりやすく魅力的なデザインに仕上げていきます。視覚で心を動かすポジションです。",
+                why:
+                    "この職種では、細部までこだわる美意識や、相手のイメージをくみ取って表現に落とし込む力が大きな武器になります。言語化しづらい感覚をデザインとして整理し、丁寧にブラッシュアップしていけるスタイルは、ビジュアル制作と非常に相性が良いです。静かに作品で自己表現できることも強みになります。",
+                how:
+                    "働き方としては、集中してデザイン案を作り込む時間が多く、修正依頼への対応や打ち合わせを挟みながら進行します。フリーランスとして自宅で制作する形もあれば、チームに所属してブランド全体の世界観づくりに関わる形もあります。ポートフォリオを通じて、自分の成長が目に見えて実感しやすい仕事です。"
+            },
+            "メイク/スタイリング": {
+                what:
+                    "メイク/スタイリングは、人の魅力を引き出すヘアメイクやファッションの提案を通じて、外見から自信や世界観をつくる仕事です。撮影現場や店舗、サロンなどで、目的やシーンに合わせたスタイルを一緒に考え、実際に手を動かして形にしていきます。感性と技術の両方を使うポジションです。",
+                why:
+                    "この職種では、色や質感のわずかな違いにも気づける感性や、相手の雰囲気に合わせて提案を変えられる柔軟さが大きな強みになります。相手の話を聞きながら、「どうなりたいか」のイメージを一緒に膨らませていけるスタイルは、メイク・スタイリングと非常に相性が良いです。手仕事の丁寧さも価値として直接伝わります。",
+                how:
+                    "働き方としては、土日やイベント時に忙しくなることも多く、シフトや案件ベースで動くリズムになりがちです。現場ごとに求められるテイストが変わるため、日々インプットを続けることも大切になります。お客様からの「またお願いしたい」という言葉が、次の仕事につながりやすいフィールドです。"
+            },
+            "フォト・映像クリエイター": {
+                what:
+                    "フォト・映像クリエイターは、写真や動画を通じてストーリーや世界観を表現し、人の心に残るビジュアルコンテンツを制作する仕事です。撮影の構図やライティング、編集のテンポや色味などを調整しながら、伝えたいテーマを映像として形にしていきます。視覚的な物語づくりを担うポジションです。",
+                why:
+                    "この職種では、瞬間の表情や光のニュアンスを敏感にとらえる観察眼と、自分なりの世界観を持って表現できる感性が大きな武器になります。地道な編集作業を丁寧に積み上げられるスタイルは、フォト・映像制作と非常に相性が良いです。言葉ではなく映像で語ることが得意な人にとって、強みを生かしやすいフィールドです。",
+                how:
+                    "働き方としては、撮影の日と編集の日でリズムが大きく変わり、ロケやスタジオ撮影で外に出る日もあれば、自宅やオフィスで黙々と編集に向き合う日もあります。フリーランスとして案件ごとに動く形も多く、スケジュールや収入の波を自分でマネジメントする必要がありますが、その分、表現の自由度も高い仕事です。"
+            },
+            "研究・リサーチ": {
+                what:
+                    "研究・リサーチは、特定のテーマについて情報やデータを集め、分析し、知見としてまとめる仕事です。インタビューやアンケート、データ解析、文献調査などを通じて、仮説を立てて検証を繰り返し、結果をレポートとして共有します。意思決定や新規施策の土台になるインサイトを生み出すポジションです。",
+                why:
+                    "この職種では、興味を持ったテーマを徹底的に掘り下げていける探求心と、主観に偏らず事実ベースで考えられる冷静さが大きな強みになります。複雑なデータを整理し、分かりやすく言語化できるスタイルは、リサーチ業務と非常に相性が良いです。結論を急がず、「分からないこと」をそのまま扱える姿勢も評価されます。",
+                how:
+                    "働き方としては、調査設計・データ収集・分析・報告のサイクルを案件ごとに回していくスタイルになります。納期に向けて集中的に作業する期間もありますが、その分、一区切りごとに達成感が得られる仕事です。テーマによっては社会課題や新技術にも触れられ、知的好奇心を満たしやすいフィールドです。"
+            },
+            "テクノロジー企画": {
+                what:
+                    "テクノロジー企画は、新しい技術やツールを活用して、業務改善や新サービスのアイデアを具体的な企画に落とし込む仕事です。社内外のテクノロジートレンドをキャッチアップしながら、どこに活かせるかを考え、要件やロードマップにまとめていきます。エンジニアとビジネスサイドの橋渡し役になるポジションです。",
+                why:
+                    "この職種では、技術の仕組みをざっくりと理解しつつ、「それをどこに使うと価値が出るか」を考えられる力が大きな武器になります。構造を分解して整理するスタイルや、仮説ベースで可能性を検討できる姿勢は、テクノロジー企画と非常に相性が良いです。新しいものへの好奇心も、強みとして活きてきます。",
+                how:
+                    "働き方としては、情報収集や社内インタビュー、プロトタイピングの検討など、探索フェーズのタスクが多くなります。すぐに形にならないテーマも扱うため、短期的な成果だけでなく中長期の変化を見据えて動く必要があります。継続して経験を積むほど、技術とビジネスの両面から信頼される存在になっていきます。"
+            },
+            "データサイエンス/設計": {
+                what:
+                    "データサイエンス/設計は、大量のデータからパターンや傾向を見つけ出し、意思決定やサービス改善につなげる仕事です。分析基盤の設計や集計ロジックの構築、機械学習モデルの検討などを通じて、数字の裏側にある意味を明らかにしていきます。論理と数学を武器にするポジションです。",
+                why:
+                    "この職種では、数字や情報を冷静に扱い、仮説を立てて検証する思考プロセスが大きな強みになります。複雑なデータ構造を整理し、わかりやすい指標に落とし込めるスタイルは、データサイエンスと非常に相性が良いです。感情よりもロジックを重視する姿勢が、そのまま価値として評価される領域です。",
+                how:
+                    "働き方としては、集中してコードやクエリを書く時間が多く、定期的に関係者と結果や示唆を共有するサイクルを回していきます。リモートワークとも相性が良く、自分のペースで深く考える時間を取りやすい仕事です。スキルを磨くほど、専門性の高いポジションや高難度プロジェクトにも関わっていけるようになります。"
+            },
+            "ライター/編集": {
+                what:
+                    "ライター/編集は、物語や実体験、サービスの価値などを文章として形にし、読み手の感情を動かす仕事です。取材やヒアリングで集めたエピソードを整理し、構成や表現を工夫しながら、心に残るストーリーをつくっていきます。紙・Web・SNSなどさまざまな媒体で活躍できるポジションです。",
+                why:
+                    "この職種では、人の気持ちや背景を丁寧に受け止め、それを言葉で表現する力が大きな武器になります。静かに相手の話を聞き、感情をすくい上げて文章に落とし込めるスタイルは、ライター・編集と非常に相性が良いです。自分の内面や価値観を大切にしながら、読み手の心に寄り添えるところも強みとなります。",
+                how:
+                    "働き方としては、一人で執筆や編集に集中する時間が長く、締切に向けてマイペースに積み上げていくスタイルになります。フリーランスとして在宅で働く選択肢も多く、自分なりの働き方を設計しやすい領域です。書き続けるほど文章の精度が高まり、指名での依頼も増えていきます。"
+            },
+            "カウンセリング/支援": {
+                what:
+                    "カウンセリング/支援は、心や生活面で不安を抱える人に寄り添い、話を聞きながら問題の整理や選択をサポートする仕事です。対話やワークを通じて、自分の感情や考え方に気づけるように支援し、必要に応じて専門機関と連携することもあります。相手のペースを尊重しながら伴走するポジションです。",
+                why:
+                    "この職種では、相手を評価せずに受け止める姿勢や、長く寄り添い続けられる忍耐強さが大きな強みになります。言葉を慎重に選びながら安心できる空気をつくれるスタイルは、カウンセリング・支援と非常に相性が良いです。自分の価値観を押し付けず、相手の選択を尊重できるところも重要なポイントです。",
+                how:
+                    "働き方としては、予約制の個別面談やグループセッションが中心になり、その前後で記録作成やケース会議が行われます。感情的なテーマに触れることも多いため、自分自身のメンタルケアやチームでの振り返りも大切です。長く関わるほど、信頼関係が深まり、小さな変化を一緒に喜べる仕事です。"
+            },
+            "クリエイティブ職": {
+                what:
+                    "クリエイティブ職は、文章やデザイン、映像、音楽など多様な表現手段を用いて、世界観やメッセージを形にする仕事です。オリジナルの作品や企画を生み出し、受け手に新しい視点や感情の動きを届けていきます。自分の感性を軸にしながら表現を重ねるポジションです。",
+                why:
+                    "この職種では、自分の内側にある感情やイメージを大切にし、それを丁寧に作品へ落とし込める力が大きな武器になります。派手ではなくても、静かに深く響く表現を目指せるスタイルは、クリエイティブ領域と非常に相性が良いです。こだわりや世界観を諦めずに育てていけるところも強みになります。",
+                how:
+                    "働き方としては、一人で制作に集中する時間が多くなり、締切や発表のタイミングに合わせて創作のペースを調整していくスタイルになります。フリーランスや副業として活動する人も多く、自分なりのペースで長く続けやすい領域です。少しずつ作品を積み重ねることで、自分だけのポートフォリオとファンが育っていきます。"
+            },
+            "新規事業・企画": {
+                what:
+                    "新規事業・企画は、まだ世の中にない価値やビジネスモデルを考え、ゼロから事業のタネをつくって検証していく仕事です。アイデア出しだけでなく、仮説検証や小さな実験、数値の振り返りなどを繰り返しながら、形になる可能性のある案を育てていきます。変化の激しい領域で挑戦を楽しむポジションです。",
+                why:
+                    "この職種では、常識にとらわれずに発想を転換できる力や、失敗を前提に試行錯誤できるマインドが大きな強みになります。議論を通じて新しい視点を提示し、人を巻き込みながら仮説を磨いていけるスタイルは、新規事業と非常に相性が良いです。変化を楽しみ、好奇心で動けるところも評価されます。",
+                how:
+                    "働き方としては、調査・企画・実験・振り返りのサイクルを短いスパンで何度も回していくスタイルになります。成功が保証されないテーマも多い分、自分でモチベーションを管理し、チームで一緒に試す文化をつくることが大切です。経験を重ねるほど、「うまくいく種」を見極めるセンスも磨かれていきます。"
+            },
+            "マーケ/クリエイティブプラン": {
+                what:
+                    "マーケ/クリエイティブプランは、ターゲットとなるお客様を理解し、どんなメッセージや企画で心を動かすかを設計する仕事です。キャンペーンやコンテンツの企画立案、コピーやクリエイティブの方向性決め、施策の振り返りなどを通じて、継続的にブランドを育てていきます。発想力と分析力の両方を使うポジションです。",
+                why:
+                    "この職種では、多様な視点から物事を眺め、アイデアを次々と生み出せる力が大きな武器になります。数字や結果をきちんと見ながらも、遊び心を忘れずにプランを練れるスタイルは、マーケ・クリエイティブ企画と非常に相性が良いです。議論を通じてアイデアを磨くことを楽しめる点も強みになります。",
+                how:
+                    "働き方としては、情報収集やブレスト、企画書作成に時間を使いながら、制作チームやクライアントとの打ち合わせも行うリズムになります。施策の実施と振り返りを繰り返す中で、仮説の精度が上がっていくのを実感しやすい仕事です。SNSやデジタル広告など、新しいメディアにも触れ続けることになります。"
+            },
+            "プロダクトディスカバリ": {
+                what:
+                    "プロダクトディスカバリは、「本当にユーザーが求めているものは何か」を探り当てるために、インタビューやプロトタイプ検証を繰り返す仕事です。ユーザーの行動や声を観察しながら、課題の本質を見つけ出し、どのような機能や体験に落とし込むかを検討していきます。仮説と実験を行き来するポジションです。",
+                why:
+                    "この職種では、前提を疑いながら問いを立て直す力や、意見の違いを楽しみながら議論できる姿勢が大きな強みになります。インタビューの中からヒントを拾い上げ、チームで新しい方向性をつくっていけるスタイルは、プロダクトディスカバリと非常に相性が良いです。失敗を学びに変えるマインドも重要な要素です。",
+                how:
+                    "働き方としては、ユーザーリサーチと社内ディスカッションを短いサイクルで回し、仮説と検証を行き来する日々になります。完成形を急がず、「何が本当に価値なのか」を見極めることに時間を使う仕事です。プロダクトの方向性に深く関わるため、やりがいも大きく、難易度も高いフィールドです。"
+            },
+            "営業/アライアンス": {
+                what:
+                    "営業/アライアンスは、自社と他社の強みを組み合わせた協業やパートナーシップをつくり、新しい価値や売上機会を生み出す仕事です。提携先候補の開拓や打ち合わせ、条件交渉、共同施策の企画などを通じて、お互いにメリットのある関係性を形にしていきます。人と人、組織と組織をつなぐポジションです。",
+                why:
+                    "この職種では、初対面の人とも前向きに関係を築ける社交性と、Win-Winの落としどころを探れる交渉力が大きな武器になります。相手の立場や事情を想像しながら提案を組み立てられるスタイルは、アライアンス営業と非常に相性が良いです。巻き込み力とスピード感を活かしやすいフィールドです。",
+                how:
+                    "働き方としては、社外との打ち合わせやイベント参加が多くなり、人と会う機会が豊富な仕事です。社内の複数部署とも連携しながら進めるため、調整力や情報共有のスキルも求められます。関係が深まるほど、中長期で大きな成果につながる提携を育てていけるポジションです。"
+            },
+            "企画・プロデュース": {
+                what:
+                    "企画・プロデュースは、コンテンツやサービス、イベントなどの全体像を描き、関係者をまとめながら実現していく仕事です。コンセプトづくりから企画書作成、チーム編成、進行管理、クオリティチェックまで、プロジェクト全体を俯瞰して動きます。発想と推進力の両方を使うポジションです。",
+                why:
+                    "この職種では、アイデアを出すだけでなく、それを実際に形にするための段取りを組める力が大きな武器になります。人を巻き込みながら楽しくプロジェクトを進めていけるスタイルは、プロデュース業務と非常に相性が良いです。場の空気を前向きに保ちつつ、必要なときには判断できる点も強みとして評価されます。",
+                how:
+                    "働き方としては、複数の案件を並行して進めることも多く、打ち合わせや連絡調整の時間が多くなりがちです。その一方で、自分の企画が世の中に出たときの達成感は大きく、反響をダイレクトに感じやすい仕事です。経験を積むほど、より大規模なプロジェクトのプロデュースも任されるようになります。"
+            },
+            "広報/PR/CS": {
+                what:
+                    "広報/PR/CSは、会社やサービスの魅力を社外・社内に伝え、ファンや信頼を増やしていく仕事です。プレスリリースやSNS発信、イベント企画に加え、お客様の声を受け止めて社内にフィードバックする役割も担います。発信と傾聴の両方を通じて、ブランドの印象を育てるポジションです。",
+                why:
+                    "この職種では、ポジティブで前向きなメッセージをつくれる力と、相手の感情に共感しながら対応できる力が大きな強みになります。明るいコミュニケーションで場を和らげつつ、誠実に説明できるスタイルは、広報・PR・CS業務と非常に相性が良いです。人とのつながりを大切にする姿勢も、そのまま価値になります。",
+                how:
+                    "働き方としては、日々の情報発信と、キャンペーンやイベントなどの企画・運営が組み合わさるスタイルになります。メディア対応やSNSの反応チェック、お客様の声への返信など、外部との接点も多い仕事です。会社の“顔”として見られることも増えるため、自分の言葉や態度がブランドに与える影響を意識しながら働くことになります。"
+            }
+            // ここまでで、現在定義されている全職種に個別テキストを用意
+        };
+
+        function renderJobDetail(job, result) {
+            const h1El = document.getElementById('job-detail-h1');
+            const b1El = document.getElementById('job-detail-body1');
+            const h2El = document.getElementById('job-detail-h2');
+            const b2El = document.getElementById('job-detail-body2');
+            const h3El = document.getElementById('job-detail-h3');
+            const b3El = document.getElementById('job-detail-body3');
+
+            if (!job) {
+                h1El.innerText = "";
+                b1El.innerText = "";
+                h2El.innerText = "";
+                b2El.innerText = "";
+                h3El.innerText = "";
+                b3El.innerText = "";
+                return;
+            }
+
+            const title = job.title;
+
+            // 職種ごとに解像度の高いテキストが用意されている場合はそれを優先
+            const jobDetail = jobDetailsMap[title];
+
+            h1El.innerText = `▪ ${title}はどういう仕事なのか？`;
+
+            h2El.innerText = `▪ あなたの強みが${title}で活きる理由`;
+            // result が null の場合は、現在表示中タイプ名から typesData を引いて強みを取得
+            let strengthsText = "あなたの強み";
+            const typeNameEl = document.getElementById('result-name');
+            let typeName = "";
+            if (typeNameEl && typeof typeNameEl.innerText === "string") {
+                typeName = typeNameEl.innerText;
+            }
+            const srcResult =
+                result ||
+                typesData.find(t => t.name === typeName) ||
+                null;
+            if (srcResult && Array.isArray(srcResult.strengths) && srcResult.strengths.length) {
+                strengthsText = `「${srcResult.strengths.slice(0, 2).join("」「")}」`;
+            }
+
+            if (jobDetail) {
+                // 職種ごとの詳細テキストを使用
+                b1El.innerText = jobDetail.what;
+                b2El.innerText = jobDetail.why.replace("{STRENGTHS}", strengthsText);
+                h3El.innerText = `▪ ${title}はどのような働き方なのか？`;
+                b3El.innerText = jobDetail.how;
+            } else {
+                // 定義がない職種は汎用テンプレートでフォールバック
+                b1El.innerText =
+                    `${title}は、相手の課題やニーズを理解し、それに合った価値を提供していく仕事です。` +
+                    `現場やお客様、チームメンバーと向き合いながら、日々の業務の中で小さな改善や工夫を積み重ねていきます。` +
+                    `数字や成果だけでなく、人との関係性や信頼も大切にしながら進めていくポジションです。`;
+
+                b2El.innerText =
+                    `この診断で見えてきた${strengthsText}といったポイントは、${title}で特に活きやすい要素です。` +
+                    `相手の状況を丁寧に理解しながら、一歩ずつ形にしていく力が求められるため、あなたのスタイルと相性が良い仕事と言えます。` +
+                    `無理にキャラを変えず、今の自分の得意さをベースに成果につなげやすいフィールドです。`;
+
+                h3El.innerText = `▪ ${title}はどのような働き方なのか？`;
+                b3El.innerText =
+                    `${title}では、日々のルーチンワークと、その中で生まれるイレギュラー対応の両方に関わることが多いです。` +
+                    `チームと連携しながらも、自分でスケジュールを整えたり、優先順位を決めたりする場面が頻繁にあります。` +
+                    `慣れてくるほど裁量も増え、自分なりのやり方で成果を出すスタイルに近づいていきます。`;
+            }
+
+            // モバイル向け「もっと見る」トグル
+            [b1El, b2El, b3El].forEach((pEl) => {
+                if (!pEl) return;
+                let btn = pEl.nextElementSibling;
+                if (!btn || !btn.classList || !btn.classList.contains('more-toggle')) {
+                    btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'more-toggle';
+                    btn.textContent = '▼ もっと見る（タップで全文表示）';
+                    pEl.parentNode.insertBefore(btn, pEl.nextSibling);
+                }
+                btn.onclick = () => {
+                    const expanded = pEl.classList.toggle('expanded');
+                    btn.textContent = expanded ? '▲ 閉じる' : '▼ もっと見る（タップで全文表示）';
+                };
+            });
+        }
+
+        function resetQuiz() {
+            showScreen('start-screen');
+        }
+
+        // グローバルから呼び出せるように明示的に公開
+        window.startQuiz = startQuiz;
+        window.goBack = goBack;
+        window.handleAnswer = handleAnswer;
+        window.resetQuiz = resetQuiz;
+
+    </script>
+</body>
+
+</html>
