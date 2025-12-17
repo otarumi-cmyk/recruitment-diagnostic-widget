@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>想定年収診断 - UIプレビュー</title>
+  <style>
+    :root {
+      --bg: #f8f7f4;
+      --panel: #ffffff;
+      --border: #e9e5dd;
+      --primary: #ff6b03;
+      --primary-2: #ffa347;
+      --text: #1f2933;
+      --muted: #6b7280;
+      --radius: 16px;
+      --font: 'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+      --shadow: 0 16px 40px rgba(0,0,0,0.10);
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(circle at 20% 20%, rgba(255,107,3,0.07), transparent 26%),
+                  radial-gradient(circle at 80% 0%, rgba(255,163,71,0.08), transparent 22%),
+                  var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .shell {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+    .hero {
+      padding: 24px 28px;
+      background: linear-gradient(135deg, rgba(255,107,3,0.10), rgba(255,163,71,0.10));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: 0.01em; }
+    .hero p { margin: 4px 0; color: var(--muted); font-size: 14px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      padding: 20px;
+    }
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .progress {
+      flex: 1;
+      height: 10px;
+      background: #f4ede5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 20%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+      transition: width 0.2s ease;
+    }
+    .progress-text {
+      font-size: 13px;
+      color: var(--muted);
+      min-width: 110px;
+      text-align: right;
+    }
+    .question-card {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fffaf5;
+    }
+    .question-title {
+      margin: 0 0 20px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .opt {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+      text-align: center;
+      font-weight: 500;
+    }
+    .opt:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(255,107,3,0.12);
+    }
+    .opt.active {
+      border-color: var(--primary);
+      background: #fff2e7;
+      box-shadow: 0 6px 14px rgba(255,107,3,0.18);
+      color: #7a2f00;
+      font-weight: 700;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(255,107,3,0.26);
+    }
+    .btn-primary:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    .btn-secondary:hover {
+      background: #fffaf5;
+    }
+    
+    /* 結果画面スタイル */
+    .result-hero {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .salary-display {
+      background: linear-gradient(135deg, rgba(255,107,3,0.10), rgba(255,163,71,0.10));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      margin: 30px 0;
+      box-shadow: var(--shadow-soft);
+    }
+    .salary-amount {
+      font-size: 64px;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 20px 0;
+      line-height: 1;
+    }
+    .salary-label {
+      font-size: 18px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .comparison {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: #fffaf5;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    .comparison-item {
+      text-align: center;
+    }
+    .comparison-label {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .comparison-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .comparison-value.current {
+      color: var(--text);
+    }
+    .comparison-value.increase {
+      color: #22c55e;
+    }
+    .divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+    }
+    .skill-breakdown {
+      margin-top: 30px;
+    }
+    .skill-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #fffaf5;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .skill-name {
+      font-size: 14px;
+      color: var(--text);
+    }
+    .skill-stars {
+      color: var(--primary);
+      font-size: 16px;
+    }
+    
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      .hero { padding: 18px; }
+      .options { grid-template-columns: 1fr; }
+      .btn { width: 100%; text-align: center; }
+      .nav { flex-direction: column; }
+      .progress-text { min-width: 72px; font-size: 12px; }
+      .salary-amount { font-size: 48px; }
+      .comparison { flex-direction: column; gap: 20px; }
+      .divider { width: 100%; height: 1px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- 診断画面のプレビュー -->
+    <div class="hero">
+      <h1>想定年収診断</h1>
+      <p>あなたのスキルから想定年収を算出します</p>
+    </div>
+
+    <div class="panel">
+      <div class="progress-wrap">
+        <div class="progress">
+          <div class="progress-bar" style="width: 20%;"></div>
+        </div>
+        <div class="progress-text">2/10 (20%)</div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">Q1: 現在の年収はどれに該当しますか？</div>
+        <div class="options">
+          <div class="opt">〜300万円</div>
+          <div class="opt active">300〜400万円</div>
+          <div class="opt">400〜600万円</div>
+          <div class="opt">600〜800万円</div>
+          <div class="opt">800〜1000万円</div>
+          <div class="opt">1000万円以上</div>
+        </div>
+        <div class="nav">
+          <button class="btn btn-secondary">戻る</button>
+          <button class="btn btn-primary">次へ</button>
+        </div>
+      </div>
+    </div>
+
+    <hr style="margin: 40px 0; border: none; border-top: 2px dashed var(--border);">
+
+    <!-- 結果画面のプレビュー -->
+    <div class="hero">
+      <h1>想定年収診断の結果</h1>
+    </div>
+
+    <div class="panel">
+      <div class="result-hero">
+        <div class="salary-display">
+          <div class="salary-amount">1,025万円</div>
+          <div class="salary-label">想定年収</div>
+        </div>
+
+        <div class="comparison">
+          <div class="comparison-item">
+            <div class="comparison-label">現年収</div>
+            <div class="comparison-value current">900万円</div>
+          </div>
+          <div class="divider"></div>
+          <div class="comparison-item">
+            <div class="comparison-label">加算額</div>
+            <div class="comparison-value increase">+125万円</div>
+          </div>
+        </div>
+
+        <div class="skill-breakdown">
+          <h3 style="margin: 0 0 16px; font-size: 16px; color: var(--text);">スキル評価の内訳</h3>
+          <div class="skill-item">
+            <span class="skill-name">職種スキル</span>
+            <span class="skill-stars">★★★★☆</span>
+          </div>
+          <div class="skill-item">
+            <span class="skill-name">マネジメント</span>
+            <span class="skill-stars">★★★☆☆</span>
+          </div>
+          <div class="skill-item">
+            <span class="skill-name">デジタルスキル</span>
+            <span class="skill-stars">★★★★☆</span>
+          </div>
+          <div class="skill-item">
+            <span class="skill-name">実績・成果</span>
+            <span class="skill-stars">★★★★☆</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+          <button class="btn btn-primary">もう一度診断する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
