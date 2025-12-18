@@ -1,0 +1,589 @@
+/**
+ * 管理画面CSS
+ */
+
+.cta-tracker-dashboard {
+    margin: 20px 0;
+}
+
+.cta-tracker-period-selector {
+    background: #fff;
+    padding: 15px;
+    margin: 20px 0;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.cta-tracker-period-selector select,
+.cta-tracker-period-selector input[type="date"] {
+    margin-right: 10px;
+}
+
+#custom-date-range {
+    margin-left: 10px;
+}
+
+#custom-date-range span {
+    margin: 0 5px;
+}
+
+.cta-tracker-summary {
+    background: #fff;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.cta-tracker-summary h2 {
+    margin-top: 0;
+}
+
+.cta-tracker-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.cta-tracker-stat-box {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f6fc 100%);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.cta-tracker-stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.cta-tracker-stat-box .stat-label {
+    font-size: 14px;
+    color: #646970;
+    margin-bottom: 10px;
+}
+
+.cta-tracker-stat-box .stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #2271b1;
+    transition: all 0.3s ease;
+}
+
+.cta-tracker-stat-box .stat-icon {
+    font-size: 32px;
+    color: #2271b1;
+    margin-bottom: 10px;
+}
+
+.cta-tracker-stat-box .stat-trend {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
+}
+
+.cta-tracker-stat-box .trend-indicator {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.cta-tracker-stat-box .trend-indicator.trend-up {
+    color: #00a32a;
+}
+
+.cta-tracker-stat-box .trend-indicator.trend-down {
+    color: #d63638;
+}
+
+.cta-tracker-stat-box .trend-indicator.trend-neutral {
+    color: #646970;
+}
+
+.cta-tracker-stat-box .trend-text {
+    color: #646970;
+}
+
+.cta-tracker-export {
+    margin: 20px 0;
+}
+
+.cta-tracker-section {
+    background: #fff;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.cta-tracker-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccd0d4;
+}
+
+.cta-tracker-section table {
+    margin-top: 15px;
+}
+
+.cta-tracker-section table td {
+    word-break: break-all;
+}
+
+.cta-tracker-section table td a {
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.cta-tracker-section table td a:hover {
+    text-decoration: underline;
+}
+
+/* ヘッダー */
+.cta-tracker-header {
+    margin-bottom: 20px;
+}
+
+.cta-tracker-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #2271b1 0%, #135e96 100%);
+    color: #fff;
+    border-radius: 8px;
+    margin: 0;
+}
+
+.cta-tracker-header h1 .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+}
+
+/* 期間選択 */
+.period-selector-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.period-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.custom-date-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.date-separator {
+    color: #646970;
+}
+
+.period-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.period-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* サマリーヘッダー */
+.summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.summary-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.summary-period {
+    color: #646970;
+    font-size: 14px;
+}
+
+/* セクションヘッダー */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.section-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.section-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 5px 10px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    width: 250px;
+}
+
+/* テーブル */
+.table-container {
+    overflow-x: auto;
+}
+
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.sortable:hover {
+    background-color: #f0f0f1;
+}
+
+.sort-indicator {
+    margin-left: 5px;
+    color: #2271b1;
+}
+
+.row-comment {
+    font-size: 11px;
+    color: #646970;
+    margin-top: 3px;
+    font-style: italic;
+}
+
+.ctr-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.ctr-badge.high {
+    background-color: #00a32a;
+    color: #fff;
+}
+
+.ctr-badge.medium {
+    background-color: #f0b849;
+    color: #fff;
+}
+
+.ctr-badge.low {
+    background-color: #d63638;
+    color: #fff;
+}
+
+.table-footer {
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* デバイス統計 */
+.device-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.device-stat-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.device-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.device-icon {
+    font-size: 48px;
+    color: #2271b1;
+    margin-bottom: 10px;
+}
+
+.device-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1d2327;
+    margin-bottom: 15px;
+}
+
+.device-stats {
+    margin-bottom: 15px;
+}
+
+.device-stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.stat-label-small {
+    color: #646970;
+}
+
+.stat-value-small {
+    font-weight: bold;
+    color: #1d2327;
+}
+
+.device-progress {
+    margin-top: 15px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #f0f0f1;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2271b1 0%, #135e96 100%);
+    transition: width 0.5s ease;
+}
+
+.progress-label {
+    font-size: 12px;
+    color: #646970;
+}
+
+/* トレンドグラフ */
+.trend-charts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.trend-chart-container {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.trend-chart-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #1d2327;
+}
+
+.trend-chart-container canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 1200px) {
+    .cta-tracker-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .device-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .cta-tracker-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .device-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .period-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .custom-date-range {
+        flex-direction: column;
+    }
+    
+    .table-container {
+        overflow-x: scroll;
+    }
+    
+    .trend-chart-container canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .cta-tracker-header h1 {
+        font-size: 20px;
+        padding: 10px 15px;
+    }
+    
+    .cta-tracker-stat-box .stat-value {
+        font-size: 24px;
+    }
+    
+    .period-actions {
+        flex-direction: column;
+    }
+    
+    .period-actions .button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* CTA URL管理画面 */
+.cta-tracker-urls {
+    margin: 20px 0;
+}
+
+.cta-urls-container {
+    max-width: 1200px;
+}
+
+.cta-url-form-section {
+    background: #fff;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.cta-url-form-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccd0d4;
+}
+
+.cta-url-form .form-table th {
+    width: 200px;
+}
+
+.cta-url-form .required {
+    color: #d63638;
+}
+
+.cta-urls-list-section {
+    background: #fff;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.cta-urls-list-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccd0d4;
+}
+
+.cta-urls-list-section .url-link {
+    color: #2271b1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cta-urls-list-section .url-link:hover {
+    text-decoration: underline;
+}
+
+.cta-urls-list-section .button-small {
+    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.cta-urls-list-section .button-link-delete {
+    color: #b32d2e;
+}
+
+.cta-urls-list-section .button-link-delete:hover {
+    color: #d63638;
+}
+
+.cta-urls-usage-section {
+    background: #fff;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.cta-urls-usage-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccd0d4;
+}
+
+.cta-urls-usage-section h3 {
+    margin-top: 20px;
+    color: #2271b1;
+}
+
+.cta-urls-usage-section pre {
+    background: #f0f0f1;
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.cta-urls-usage-section code {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #2271b1;
+}
+
+.cta-urls-usage-section .usage-content {
+    line-height: 1.6;
+}
